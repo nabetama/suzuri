@@ -1,19 +1,31 @@
 import React, { useState } from 'react';
 import { marked } from 'marked';
 import { open } from '@tauri-apps/plugin-dialog';
-import { readDir, DirEntry } from '@tauri-apps/plugin-fs';
+import { readDir, DirEntry, readTextFile } from '@tauri-apps/plugin-fs';
 
 // ツリー表示用の再帰コンポーネント
-const Tree: React.FC<{ nodes: any[] }> = ({ nodes }) => (
-  <ul style={{ listStyle: 'none', paddingLeft: 16 }}>
-    {nodes.map((node, idx) => (
-      <li key={idx}>
-        {node.name}
-        {node.children && <Tree nodes={node.children} />}
-      </li>
-    ))}
-  </ul>
-);
+const Tree: React.FC<{ nodes: any[], onFileClick: (path: string) => void }> = ({ nodes, onFileClick }) => {
+  if (!nodes || nodes.length === 0) return <div style={{ color: '#aaa' }}>ファイルがありません</div>;
+  return (
+    <ul style={{ listStyle: 'none', paddingLeft: 16 }}>
+      {nodes.map((node, idx) => (
+        <li key={idx}>
+          {node.path ? (
+            <span
+              style={{ cursor: 'pointer', color: '#007acc' }}
+              onClick={() => onFileClick(node.path)}
+            >
+              {node.name}
+            </span>
+          ) : (
+            node.name
+          )}
+          {node.children && <Tree nodes={node.children} onFileClick={onFileClick} />}
+        </li>
+      ))}
+    </ul>
+  );
+};
 
 // .mdファイルのみを再帰的に取得しツリー構造に変換する関数
 async function getMarkdownTree(parentPath: string): Promise<any[]> {
@@ -29,13 +41,11 @@ async function getMarkdownTree(parentPath: string): Promise<any[]> {
         return null;
       }
     } else if (entry.name.endsWith('.md')) {
-      // .mdファイルのみ
-      return { name: entry.name };
+      return { name: entry.name, path: fullPath };
     } else {
       return null;
     }
   }));
-  // nullを除外
   return result.filter(Boolean);
 }
 
@@ -52,9 +62,13 @@ const Editor: React.FC = () => {
     if (typeof selected === 'string') {
       setDirPath(selected);
       const mdTree = await getMarkdownTree(selected);
-      console.log(mdTree);
       setTree(mdTree);
     }
+  };
+
+  const handleFileClick = async (path: string) => {
+    const content = await readTextFile(path);
+    setMarkdown(content);
   };
 
   return (
@@ -70,7 +84,7 @@ const Editor: React.FC = () => {
           </div>
         )}
         <h3 style={{ marginTop: 0 }}>ファイル</h3>
-        <Tree nodes={tree} />
+        <Tree nodes={tree} onFileClick={handleFileClick} />
       </div>
       {/* エディタページ */}
       <div style={{ flex: 1, display: 'flex' }}>
