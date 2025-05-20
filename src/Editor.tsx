@@ -1,27 +1,7 @@
 import React, { useState } from 'react';
 import { marked } from 'marked';
 import { open } from '@tauri-apps/plugin-dialog';
-
-// 仮のディレクトリツリーデータ
-const mockTree = [
-  {
-    name: 'docs',
-    children: [
-      { name: 'intro.md' },
-      { name: 'usage.md' },
-      {
-        name: 'guide',
-        children: [
-          { name: 'install.md' },
-          { name: 'config.md' },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'README.md',
-  },
-];
+import { readDir, DirEntry } from '@tauri-apps/plugin-fs';
 
 // ツリー表示用の再帰コンポーネント
 const Tree: React.FC<{ nodes: any[] }> = ({ nodes }) => (
@@ -35,9 +15,34 @@ const Tree: React.FC<{ nodes: any[] }> = ({ nodes }) => (
   </ul>
 );
 
+// .mdファイルのみを再帰的に取得しツリー構造に変換する関数
+async function getMarkdownTree(parentPath: string): Promise<any[]> {
+  const entries = await readDir(parentPath);
+  const result = await Promise.all(entries.map(async (entry: DirEntry) => {
+    const fullPath = `${parentPath}/${entry.name}`;
+    if (entry.isDirectory) {
+      // ディレクトリの場合、再帰的に探索
+      const children = await getMarkdownTree(fullPath);
+      if (children.length > 0) {
+        return { name: entry.name, children };
+      } else {
+        return null;
+      }
+    } else if (entry.name.endsWith('.md')) {
+      // .mdファイルのみ
+      return { name: entry.name };
+    } else {
+      return null;
+    }
+  }));
+  // nullを除外
+  return result.filter(Boolean);
+}
+
 const Editor: React.FC = () => {
   const [markdown, setMarkdown] = useState('');
   const [dirPath, setDirPath] = useState<string | null>(null);
+  const [tree, setTree] = useState<any[]>([]);
 
   const handleOpenDirectory = async () => {
     const selected = await open({
@@ -46,6 +51,9 @@ const Editor: React.FC = () => {
     });
     if (typeof selected === 'string') {
       setDirPath(selected);
+      const mdTree = await getMarkdownTree(selected);
+      console.log(mdTree);
+      setTree(mdTree);
     }
   };
 
@@ -62,7 +70,7 @@ const Editor: React.FC = () => {
           </div>
         )}
         <h3 style={{ marginTop: 0 }}>ファイル</h3>
-        <Tree nodes={mockTree} />
+        <Tree nodes={tree} />
       </div>
       {/* エディタページ */}
       <div style={{ flex: 1, display: 'flex' }}>
