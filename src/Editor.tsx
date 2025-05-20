@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { marked } from 'marked';
 
 const Editor: React.FC = () => {
   const [markdown, setMarkdown] = useState('');
@@ -13,9 +14,8 @@ const Editor: React.FC = () => {
       />
       <div
         style={{ flex: 1, padding: '1rem', background: '#f9f9f9', overflowY: 'auto' }}
-      >
-        {markdown}
-      </div>
+        dangerouslySetInnerHTML={{ __html: marked(markdown) }}
+      />
     </div>
   );
 };
