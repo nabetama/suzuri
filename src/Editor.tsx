@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { marked } from 'marked';
+import { open } from '@tauri-apps/plugin-dialog';
 
 // 仮のディレクトリツリーデータ
 const mockTree = [
@@ -36,11 +37,30 @@ const Tree: React.FC<{ nodes: any[] }> = ({ nodes }) => (
 
 const Editor: React.FC = () => {
   const [markdown, setMarkdown] = useState('');
+  const [dirPath, setDirPath] = useState<string | null>(null);
+
+  const handleOpenDirectory = async () => {
+    const selected = await open({
+      directory: true,
+      multiple: false,
+    });
+    if (typeof selected === 'string') {
+      setDirPath(selected);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
       {/* ディレクトリツリー */}
       <div style={{ width: 240, background: '#f4f4f4', borderRight: '1px solid #ddd', padding: '1rem', overflowY: 'auto' }}>
+        <button onClick={handleOpenDirectory} style={{ width: '100%', marginBottom: 12 }}>
+          ディレクトリを開く
+        </button>
+        {dirPath && (
+          <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: 8 }}>
+            {dirPath}
+          </div>
+        )}
         <h3 style={{ marginTop: 0 }}>ファイル</h3>
         <Tree nodes={mockTree} />
       </div>
