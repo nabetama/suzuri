@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { marked } from 'marked';
 import '../Editor.css';
-import  {openUrl} from '@tauri-apps/plugin-opener';
+import  { openUrl } from '@tauri-apps/plugin-opener';
 
 type MarkdownPreviewProps = {
   markdown: string;
