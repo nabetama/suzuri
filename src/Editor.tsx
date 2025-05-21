@@ -1,38 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { marked } from 'marked';
+import React, { useState, useCallback } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readDir, DirEntry, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import DirectoryTree, { TreeNode } from './components/DirectoryTree';
+import MarkdownEditor from './components/MarkdownEditor';
+import MarkdownPreview from './components/MarkdownPreview';
 import './Editor.css';
 
-const Tree: React.FC<{ nodes: any[], onFileClick: (path: string) => void }> = ({ nodes, onFileClick }) => {
-  if (!nodes || nodes.length === 0) return <div style={{ color: '#aaa' }}>ファイルがありません</div>;
-  return (
-    <ul style={{ listStyle: 'none', paddingLeft: 16 }}>
-      {nodes.map((node, idx) => (
-        <li key={idx}>
-          {node.path ? (
-            <span
-              style={{ cursor: 'pointer', color: '#007acc' }}
-              onClick={() => onFileClick(node.path)}
-            >
-              {node.name}
-            </span>
-          ) : (
-            node.name
-          )}
-          {node.children && <Tree nodes={node.children} onFileClick={onFileClick} />}
-        </li>
-      ))}
-    </ul>
-  );
-};
-
-async function getMarkdownTree(parentPath: string): Promise<any[]> {
+async function getMarkdownTree(parentPath: string): Promise<TreeNode[]> {
   const entries = await readDir(parentPath);
   const result = await Promise.all(entries.map(async (entry: DirEntry) => {
     const fullPath = `${parentPath}/${entry.name}`;
     if (entry.isDirectory) {
-      // ディレクトリの場合、再帰的に探索
       const children = await getMarkdownTree(fullPath);
       if (children.length > 0) {
         return { name: entry.name, children };
@@ -45,13 +23,13 @@ async function getMarkdownTree(parentPath: string): Promise<any[]> {
       return null;
     }
   }));
-  return result.filter(Boolean);
+  return result.filter(Boolean) as TreeNode[];
 }
 
 const Editor: React.FC = () => {
   const [markdown, setMarkdown] = useState('');
   const [dirPath, setDirPath] = useState<string | null>(null);
-  const [tree, setTree] = useState<any[]>([]);
+  const [tree, setTree] = useState<TreeNode[]>([]);
   const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string>('');
 
@@ -84,57 +62,23 @@ const Editor: React.FC = () => {
     }
   }, [currentFilePath, markdown]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSave]);
-
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
-      {/* ディレクトリツリー */}
-      <div style={{ width: 240, background: '#f4f4f4', borderRight: '1px solid #ddd', padding: '1rem', overflowY: 'auto' }}>
-        <button onClick={handleOpenDirectory} style={{ width: '100%', marginBottom: 12 }}>
-          ディレクトリを開く
-        </button>
-        {dirPath && (
-          <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: 8 }}>
-            {dirPath}
-          </div>
-        )}
-        <h3 style={{ marginTop: 0 }}>ファイル</h3>
-        <Tree nodes={tree} onFileClick={handleFileClick} />
-      </div>
-      {/* エディタページ */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 8 }}>
-          {currentFilePath && <span style={{ color: '#888', fontSize: '0.9rem' }}>{currentFilePath}</span>}
-          {saveStatus && <span style={{ color: 'green', fontSize: '0.9rem' }}>{saveStatus}</span>}
-        </div>
-        <div style={{ flex: 1, display: 'flex' }}>
-          <textarea
-            style={{ flex: 1, fontSize: '1rem', padding: '1rem', border: 'none', borderRight: '1px solid #eee', outline: 'none' }}
-            value={markdown}
-            onChange={e => setMarkdown(e.target.value)}
-            placeholder="ここにMarkdownを入力してください"
-          />
-          <div
-            style={{
-              flex: 1,
-              padding: '1rem',
-              background: '#f9f9f9',
-              overflowY: 'auto',
-              minHeight: 0
-            }}
-            className="markdown-preview"
-            dangerouslySetInnerHTML={{ __html: marked(markdown) }}
-          />
-        </div>
+      <DirectoryTree
+        nodes={tree}
+        onFileClick={handleFileClick}
+        onOpenDirectory={handleOpenDirectory}
+        currentDirPath={dirPath}
+      />
+      <div style={{ flex: 1, display: 'flex' }}>
+        <MarkdownEditor
+          value={markdown}
+          onChange={setMarkdown}
+          onSave={handleSave}
+          filePath={currentFilePath}
+          saveStatus={saveStatus}
+        />
+        <MarkdownPreview markdown={markdown} />
       </div>
     </div>
   );
