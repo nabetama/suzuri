@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { marked } from 'marked';
 import { open } from '@tauri-apps/plugin-dialog';
-import { readDir, DirEntry, readTextFile } from '@tauri-apps/plugin-fs';
+import { readDir, DirEntry, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import './Editor.css';
 
-// ツリー表示用の再帰コンポーネント
 const Tree: React.FC<{ nodes: any[], onFileClick: (path: string) => void }> = ({ nodes, onFileClick }) => {
   if (!nodes || nodes.length === 0) return <div style={{ color: '#aaa' }}>ファイルがありません</div>;
   return (
@@ -27,7 +27,6 @@ const Tree: React.FC<{ nodes: any[], onFileClick: (path: string) => void }> = ({
   );
 };
 
-// .mdファイルのみを再帰的に取得しツリー構造に変換する関数
 async function getMarkdownTree(parentPath: string): Promise<any[]> {
   const entries = await readDir(parentPath);
   const result = await Promise.all(entries.map(async (entry: DirEntry) => {
@@ -53,6 +52,8 @@ const Editor: React.FC = () => {
   const [markdown, setMarkdown] = useState('');
   const [dirPath, setDirPath] = useState<string | null>(null);
   const [tree, setTree] = useState<any[]>([]);
+  const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<string>('');
 
   const handleOpenDirectory = async () => {
     const selected = await open({
@@ -63,13 +64,36 @@ const Editor: React.FC = () => {
       setDirPath(selected);
       const mdTree = await getMarkdownTree(selected);
       setTree(mdTree);
+      setCurrentFilePath(null);
+      setMarkdown('');
     }
   };
 
   const handleFileClick = async (path: string) => {
     const content = await readTextFile(path);
     setMarkdown(content);
+    setCurrentFilePath(path);
+    setSaveStatus('');
   };
+
+  const handleSave = useCallback(async () => {
+    if (currentFilePath) {
+      await writeTextFile(currentFilePath, markdown);
+      setSaveStatus('保存しました');
+      setTimeout(() => setSaveStatus(''), 1500);
+    }
+  }, [currentFilePath, markdown]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSave]);
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
@@ -87,17 +111,30 @@ const Editor: React.FC = () => {
         <Tree nodes={tree} onFileClick={handleFileClick} />
       </div>
       {/* エディタページ */}
-      <div style={{ flex: 1, display: 'flex' }}>
-        <textarea
-          style={{ flex: 1, fontSize: '1rem', padding: '1rem', border: 'none', borderRight: '1px solid #eee', outline: 'none' }}
-          value={markdown}
-          onChange={e => setMarkdown(e.target.value)}
-          placeholder="ここにMarkdownを入力してください"
-        />
-        <div
-          style={{ flex: 1, padding: '1rem', background: '#f9f9f9', overflowY: 'auto' }}
-          dangerouslySetInnerHTML={{ __html: marked(markdown) }}
-        />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 8 }}>
+          {currentFilePath && <span style={{ color: '#888', fontSize: '0.9rem' }}>{currentFilePath}</span>}
+          {saveStatus && <span style={{ color: 'green', fontSize: '0.9rem' }}>{saveStatus}</span>}
+        </div>
+        <div style={{ flex: 1, display: 'flex' }}>
+          <textarea
+            style={{ flex: 1, fontSize: '1rem', padding: '1rem', border: 'none', borderRight: '1px solid #eee', outline: 'none' }}
+            value={markdown}
+            onChange={e => setMarkdown(e.target.value)}
+            placeholder="ここにMarkdownを入力してください"
+          />
+          <div
+            style={{
+              flex: 1,
+              padding: '1rem',
+              background: '#f9f9f9',
+              overflowY: 'auto',
+              minHeight: 0
+            }}
+            className="markdown-preview"
+            dangerouslySetInnerHTML={{ __html: marked(markdown) }}
+          />
+        </div>
       </div>
     </div>
   );
