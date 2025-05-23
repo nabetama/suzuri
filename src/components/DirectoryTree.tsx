@@ -38,7 +38,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
   };
 
   return (
-    <div style={{ width: 240, background: '#f4f4f4', borderRight: '1px solid #ddd', padding: '1rem', overflowY: 'auto' }}>
+    <div style={{ width: '100%', minWidth: 0, background: '#f4f4f4', borderRight: '1px solid #ddd', padding: '1rem', overflowY: 'auto' }}>
       <button onClick={onOpenDirectory} style={{ width: '100%', marginBottom: 12 }}>
         ディレクトリを開く
       </button>

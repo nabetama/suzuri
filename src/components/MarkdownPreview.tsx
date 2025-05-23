@@ -40,7 +40,7 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ markdown }) => {
     <div
       ref={ref}
       className="markdown-preview"
-      style={{ flex: 1, padding: '1rem', background: '#f9f9f9', overflowY: 'auto', minHeight: 0 }}
+      style={{ flex: 1, minWidth: 0, padding: '1rem', background: '#f9f9f9', overflowY: 'auto', minHeight: 0 }}
       dangerouslySetInnerHTML={{ __html: marked(markdown) }}
     />
   );
