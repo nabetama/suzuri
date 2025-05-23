@@ -9,7 +9,6 @@ type MarkdownEditorProps = {
 };
 
 const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ value, onChange, onSave, filePath, saveStatus }) => {
-  // Cmd+S/Ctrl+Sで保存
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
@@ -22,7 +21,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ value, onChange, onSave
   }, [onSave]);
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 8 }}>
         {filePath && <span style={{ color: '#888', fontSize: '0.9rem' }}>{filePath}</span>}
         {saveStatus && <span style={{ color: 'green', fontSize: '0.9rem' }}>{saveStatus}</span>}

@@ -4,6 +4,7 @@ import { readDir, DirEntry, readTextFile, writeTextFile } from '@tauri-apps/plug
 import DirectoryTree, { TreeNode } from './components/DirectoryTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import MarkdownPreview from './components/MarkdownPreview';
+import SplitPane from 'react-split-pane';
 import './Editor.css';
 
 async function getMarkdownTree(parentPath: string): Promise<TreeNode[]> {
@@ -63,14 +64,14 @@ const Editor: React.FC = () => {
   }, [currentFilePath, markdown]);
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <SplitPane split="vertical" minSize={100} defaultSize="20%">
       <DirectoryTree
         nodes={tree}
         onFileClick={handleFileClick}
         onOpenDirectory={handleOpenDirectory}
         currentDirPath={dirPath}
       />
-      <div style={{ flex: 1, display: 'flex' }}>
+      <SplitPane split="vertical" minSize={100} defaultSize="50%">
         <MarkdownEditor
           value={markdown}
           onChange={setMarkdown}
@@ -79,8 +80,8 @@ const Editor: React.FC = () => {
           saveStatus={saveStatus}
         />
         <MarkdownPreview markdown={markdown} />
-      </div>
-    </div>
+      </SplitPane>
+    </SplitPane>
   );
 };
 
