@@ -1,7 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { marked } from 'marked';
-import '../Editor.css';
 import  { openUrl } from '@tauri-apps/plugin-opener';
+
+const rootStyle: React.CSSProperties = {
+  wordBreak: 'break-word',
+  flex: 1,
+  minWidth: 0,
+  padding: '1rem',
+  background: '#f9f9f9',
+  overflowY: 'auto',
+  minHeight: 0
+};
 
 type MarkdownPreviewProps = {
   markdown: string;
@@ -39,11 +48,10 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ markdown }) => {
   return (
     <div
       ref={ref}
-      className="markdown-preview"
-      style={{ flex: 1, minWidth: 0, padding: '1rem', background: '#f9f9f9', overflowY: 'auto', minHeight: 0 }}
+      style={rootStyle}
       dangerouslySetInnerHTML={{ __html: marked(markdown) }}
     />
   );
 };
 
-export default MarkdownPreview; 
+export default MarkdownPreview;
