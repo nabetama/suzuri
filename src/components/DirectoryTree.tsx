@@ -1,36 +1,12 @@
 import React, { useState, useEffect } from 'react';
-
-const rootStyle: React.CSSProperties = {
-  background: '#2c2c2c',
-  color: '#727272',
-  width: '100%',
-  minWidth: 0,
-  borderRight: '1px solid #ddd',
-  padding: '0.5rem 0.5rem 0 0.5rem',
-  overflowY: 'auto',
-  height: '100%'
-};
-
-const rowBaseStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 4,
-  color: '#727272',
-  userSelect: 'none',
-  transition: 'color 0.2s, background 0.2s',
-  fontSize: '1.1rem',
-  lineHeight: 1.8,
-  padding: '2px 4px 2px 0.5rem',
-  borderRadius: 4,
-  cursor: 'pointer',
-};
-const rowHoverStyle: React.CSSProperties = {
-  background: '#353535',
-  color: '#fff',
-};
-const fileSpanStyle: React.CSSProperties = {
-  paddingLeft: 20,
-};
+import {
+  rootStyle,
+  rowBaseStyle,
+  rowHoverStyle,
+  fileSpanStyle,
+  menuItemStyle,
+  menuItemHoverStyle
+} from './DirectoryTree.styles';
 
 type TreeNode = {
   name: string;
@@ -48,6 +24,11 @@ type DirectoryTreeProps = {
 const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpenDirectory, currentDirPath }) => {
   const [openDirs, setOpenDirs] = useState<Record<string, boolean>>({});
   const [hovered, setHovered] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<
+    | { x: number; y: number; type: 'dir' | 'file'; path: string }
+    | null
+  >(null);
+  const [menuHoverIdx, setMenuHoverIdx] = useState<number | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -60,8 +41,24 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onOpenDirectory]);
 
+  useEffect(() => {
+    if (!contextMenu) return;
+    const close = () => setContextMenu(null);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, [contextMenu]);
+
   const toggleDir = (path: string) => {
     setOpenDirs(prev => ({ ...prev, [path]: !prev[path] }));
+  };
+
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    type: 'dir' | 'file',
+    path: string
+  ) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, type, path });
   };
 
   const renderTree = (nodes: TreeNode[], parentPath = '') => (
@@ -77,6 +74,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
                 onClick={() => toggleDir(fullPath)}
                 onMouseEnter={() => setHovered(fullPath)}
                 onMouseLeave={() => setHovered(null)}
+                onContextMenu={e => handleContextMenu(e, 'dir', fullPath)}
               >
                 <span style={{ width: 16, display: 'inline-block', textAlign: 'center' }}>
                   {isOpen ? '▼' : '▶'}
@@ -94,6 +92,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
                 onClick={() => onFileClick(fullPath)}
                 onMouseEnter={() => setHovered(fullPath)}
                 onMouseLeave={() => setHovered(null)}
+                onContextMenu={e => handleContextMenu(e, 'file', fullPath)}
               >
                 {node.name}
               </span>
@@ -112,6 +111,51 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
         </div>
       )}
       {renderTree(nodes)}
+      {contextMenu && (
+        <div
+          style={{
+            position: 'fixed',
+            top: contextMenu.y,
+            left: contextMenu.x,
+            background: '#232323',
+            color: '#fff',
+            borderRadius: 6,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            zIndex: 1000,
+            minWidth: 160,
+            padding: '4px 0',
+            fontSize: '1rem',
+          }}
+        >
+          {contextMenu.type === 'dir' ? (
+            <>
+              {['新しいファイル', '新しいフォルダ', '名前の変更', '削除'].map((label, idx) => (
+                <div
+                  key={label}
+                  style={menuHoverIdx === idx ? { ...menuItemStyle, ...menuItemHoverStyle } : menuItemStyle}
+                  onMouseEnter={() => setMenuHoverIdx(idx)}
+                  onMouseLeave={() => setMenuHoverIdx(null)}
+                >
+                  {label}
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              {['名前の変更', '削除'].map((label, idx) => (
+                <div
+                  key={label}
+                  style={menuHoverIdx === idx ? { ...menuItemStyle, ...menuItemHoverStyle } : menuItemStyle}
+                  onMouseEnter={() => setMenuHoverIdx(idx)}
+                  onMouseLeave={() => setMenuHoverIdx(null)}
+                >
+                  {label}
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };
