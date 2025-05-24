@@ -92,47 +92,55 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
     // TODO: implement other actions
   };
 
-  const renderTree = (nodes: TreeNode[], parentPath = '') => (
-    <ul style={{ listStyle: 'none', paddingLeft: 12, margin: 0 }}>
-      {nodes.map((node, idx) => {
-        const fullPath = node.path || `${parentPath}/${node.name}`;
-        if (node.children) {
-          const isOpen = openDirs[fullPath] ?? false;
-          return (
-            <li key={fullPath} style={{ userSelect: 'none' }}>
-              <span
-                style={hovered === fullPath ? { ...rowBaseStyle, ...rowHoverStyle } : rowBaseStyle}
-                onClick={() => toggleDir(fullPath)}
-                onMouseEnter={() => setHovered(fullPath)}
-                onMouseLeave={() => setHovered(null)}
-                onContextMenu={e => handleContextMenu(e, 'dir', fullPath)}
-              >
-                <span style={{ width: 16, display: 'inline-block', textAlign: 'center' }}>
-                  {isOpen ? '▼' : '▶'}
+  const renderTree = (nodes: TreeNode[], parentPath = '') => {
+    const sortedNodes = [...nodes].sort((a, b) => {
+      if (a.children && !b.children) return -1;
+      if (!a.children && b.children) return 1;
+      return (a.name || '').localeCompare(b.name || '', 'ja', { numeric: true, sensitivity: 'base' });
+    });
+
+    return (
+      <ul style={{ listStyle: 'none', paddingLeft: 12, margin: 0 }}>
+        {sortedNodes.map((node) => {
+          const fullPath = node.path || `${parentPath}/${node.name}`;
+          if (node.children) {
+            const isOpen = openDirs[fullPath] ?? false;
+            return (
+              <li key={fullPath} style={{ userSelect: 'none' }}>
+                <span
+                  style={hovered === fullPath ? { ...rowBaseStyle, ...rowHoverStyle } : rowBaseStyle}
+                  onClick={() => toggleDir(fullPath)}
+                  onMouseEnter={() => setHovered(fullPath)}
+                  onMouseLeave={() => setHovered(null)}
+                  onContextMenu={e => handleContextMenu(e, 'dir', fullPath)}
+                >
+                  <span style={{ width: 16, display: 'inline-block', textAlign: 'center' }}>
+                    {isOpen ? '▼' : '▶'}
+                  </span>
+                  {node.name}
                 </span>
-                {node.name}
-              </span>
-              {isOpen && renderTree(node.children, fullPath)}
-            </li>
-          );
-        } else {
-          return (
-            <li key={fullPath}>
-              <span
-                style={hovered === fullPath ? { ...rowBaseStyle, ...rowHoverStyle, ...fileSpanStyle } : { ...rowBaseStyle, ...fileSpanStyle }}
-                onClick={() => onFileClick(fullPath)}
-                onMouseEnter={() => setHovered(fullPath)}
-                onMouseLeave={() => setHovered(null)}
-                onContextMenu={e => handleContextMenu(e, 'file', fullPath)}
-              >
-                {node.name}
-              </span>
-            </li>
-          );
-        }
-      })}
-    </ul>
-  );
+                {isOpen && renderTree(node.children, fullPath)}
+              </li>
+            );
+          } else {
+            return (
+              <li key={fullPath}>
+                <span
+                  style={hovered === fullPath ? { ...rowBaseStyle, ...rowHoverStyle, ...fileSpanStyle } : { ...rowBaseStyle, ...fileSpanStyle }}
+                  onClick={() => onFileClick(fullPath)}
+                  onMouseEnter={() => setHovered(fullPath)}
+                  onMouseLeave={() => setHovered(null)}
+                  onContextMenu={e => handleContextMenu(e, 'file', fullPath)}
+                >
+                  {node.name}
+                </span>
+              </li>
+            );
+          }
+        })}
+      </ul>
+    );
+  };
 
   return (
     <div style={rootStyle}>
