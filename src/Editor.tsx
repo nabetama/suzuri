@@ -1,11 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { open } from '@tauri-apps/plugin-dialog';
+import { open, save } from '@tauri-apps/plugin-dialog';
 import { readDir, DirEntry, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
 import DirectoryTree, { TreeNode } from './components/DirectoryTree';
 import MarkdownEditor from './components/MarkdownEditor';
 import MarkdownPreview from './components/MarkdownPreview';
 import SplitPane from 'react-split-pane';
-import './Editor.css';
 
 async function getMarkdownTree(parentPath: string): Promise<TreeNode[]> {
   const entries = await readDir(parentPath);
@@ -63,6 +62,14 @@ const Editor: React.FC = () => {
     }
   }, [currentFilePath, markdown]);
 
+  const handleCreateFile = async () => {
+    const fileName = await save({
+        filters: [{ name: 'Markdown files', extensions: ['md'] }],
+    })
+    if (!fileName) return;
+    await writeTextFile(fileName, '');
+  };
+
   return (
     <SplitPane split="vertical" minSize={100} defaultSize="20%">
       <DirectoryTree
@@ -70,6 +77,7 @@ const Editor: React.FC = () => {
         onFileClick={handleFileClick}
         onOpenDirectory={handleOpenDirectory}
         currentDirPath={dirPath}
+        onCreateFile={handleCreateFile}
       />
       <SplitPane split="vertical" minSize={100} defaultSize="50%">
         <MarkdownEditor

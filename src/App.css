@@ -157,3 +157,21 @@ body,
 .Pane {
   font-family: "FiraCode", "Segoe UI", "Meiryo", sans-serif !important;
 }
+
+.SplitPane {
+  height: 100vh !important;
+}
+.Pane {
+  overflow: auto;
+  background: #fff !important;
+}
+.Resizer {
+  background: #eee;
+  cursor: col-resize;
+  width: 8px;
+  z-index: 10;
+  transition: background 0.2s;
+}
+.Resizer:hover {
+  background: #ccc;
+}

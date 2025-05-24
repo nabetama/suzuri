@@ -19,9 +19,10 @@ type DirectoryTreeProps = {
   onFileClick: (path: string) => void;
   onOpenDirectory: () => void;
   currentDirPath?: string | null;
+  onCreateFile: (dirPath: string) => Promise<void>;
 };
 
-const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpenDirectory, currentDirPath }) => {
+const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpenDirectory, currentDirPath, onCreateFile }) => {
   const [openDirs, setOpenDirs] = useState<Record<string, boolean>>({});
   const [hovered, setHovered] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<
@@ -52,6 +53,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
     setOpenDirs(prev => ({ ...prev, [path]: !prev[path] }));
   };
 
+  // calculate position of context menu.
   const handleContextMenu = (
     e: React.MouseEvent,
     type: 'dir' | 'file',
@@ -59,6 +61,13 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
   ) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, type, path });
+  };
+
+  const handleMenuClick = async (label: string) => {
+    if (label === '新しいファイル' && contextMenu) {
+      await onCreateFile(contextMenu.path);
+      setContextMenu(null);
+    }
   };
 
   const renderTree = (nodes: TreeNode[], parentPath = '') => (
@@ -135,6 +144,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
                   style={menuHoverIdx === idx ? { ...menuItemStyle, ...menuItemHoverStyle } : menuItemStyle}
                   onMouseEnter={() => setMenuHoverIdx(idx)}
                   onMouseLeave={() => setMenuHoverIdx(null)}
+                  onClick={() => handleMenuClick(label)}
                 >
                   {label}
                 </div>
