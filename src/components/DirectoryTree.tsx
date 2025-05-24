@@ -78,6 +78,8 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
     type: 'dir' | 'file',
     path: string
   ) => {
+    // remove selection
+    window.getSelection()?.removeAllRanges();
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, type, path });
   };
