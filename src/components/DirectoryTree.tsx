@@ -14,6 +14,25 @@ type TreeNode = {
   children?: TreeNode[];
 };
 
+export enum DirMenuAction {
+  NewFile = 'new_file',
+  NewFolder = 'new_folder',
+  Rename = 'rename',
+  Delete = 'delete',
+}
+
+const DIR_MENU_ITEMS = [
+  { key: DirMenuAction.NewFile, label: '新しいファイル' },
+  { key: DirMenuAction.NewFolder, label: '新しいフォルダ' },
+  { key: DirMenuAction.Rename, label: '名前の変更' },
+  { key: DirMenuAction.Delete, label: '削除' },
+];
+
+const FILE_MENU_ITEMS = [
+  { key: DirMenuAction.Rename, label: '名前の変更' },
+  { key: DirMenuAction.Delete, label: '削除' },
+];
+
 type DirectoryTreeProps = {
   nodes: TreeNode[];
   onFileClick: (path: string) => void;
@@ -63,11 +82,12 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
     setContextMenu({ x: e.clientX, y: e.clientY, type, path });
   };
 
-  const handleMenuClick = async (label: string) => {
-    if (label === '新しいファイル' && contextMenu) {
+  const handleMenuClick = async (action: DirMenuAction) => {
+    if (action === DirMenuAction.NewFile && contextMenu) {
       await onCreateFile(contextMenu.path);
       setContextMenu(null);
     }
+    // TODO: implement other actions
   };
 
   const renderTree = (nodes: TreeNode[], parentPath = '') => (
@@ -138,28 +158,29 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ nodes, onFileClick, onOpe
         >
           {contextMenu.type === 'dir' ? (
             <>
-              {['新しいファイル', '新しいフォルダ', '名前の変更', '削除'].map((label, idx) => (
+              {DIR_MENU_ITEMS.map((item, idx) => (
                 <div
-                  key={label}
+                  key={item.key}
                   style={menuHoverIdx === idx ? { ...menuItemStyle, ...menuItemHoverStyle } : menuItemStyle}
                   onMouseEnter={() => setMenuHoverIdx(idx)}
                   onMouseLeave={() => setMenuHoverIdx(null)}
-                  onClick={() => handleMenuClick(label)}
+                  onClick={() => handleMenuClick(item.key)}
                 >
-                  {label}
+                  {item.label}
                 </div>
               ))}
             </>
           ) : (
             <>
-              {['名前の変更', '削除'].map((label, idx) => (
+              {FILE_MENU_ITEMS.map((item, idx) => (
                 <div
-                  key={label}
+                  key={item.key}
                   style={menuHoverIdx === idx ? { ...menuItemStyle, ...menuItemHoverStyle } : menuItemStyle}
                   onMouseEnter={() => setMenuHoverIdx(idx)}
                   onMouseLeave={() => setMenuHoverIdx(null)}
+                  onClick={() => handleMenuClick(item.key)}
                 >
-                  {label}
+                  {item.label}
                 </div>
               ))}
             </>
