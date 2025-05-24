@@ -68,6 +68,11 @@ const Editor: React.FC = () => {
     })
     if (!fileName) return;
     await writeTextFile(fileName, '');
+    // update tree from root
+    if (dirPath) {
+        const mdTree = await getMarkdownTree(dirPath);
+        setTree(mdTree);
+      }
   };
 
   return (
