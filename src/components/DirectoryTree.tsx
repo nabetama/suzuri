@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { DIR_MENU_ITEMS, DirMenuAction, FILE_MENU_ITEMS } from "../constants/menu";
+import {
+	DIR_MENU_ITEMS,
+	DirMenuAction,
+	FILE_MENU_ITEMS,
+} from "../constants/menu";
 import { TreeNode } from "../types/tree";
 import {
-  fileSpanStyle,
-  menuItemHoverStyle,
-  menuItemStyle,
-  rootStyle,
-  rowBaseStyle,
-  rowHoverStyle,
+	fileSpanStyle,
+	menuItemHoverStyle,
+	menuItemStyle,
+	rootStyle,
+	rowBaseStyle,
+	rowHoverStyle,
 } from "./DirectoryTree.styles";
-
-
-
 
 type DirectoryTreeProps = {
 	nodes: TreeNode[];

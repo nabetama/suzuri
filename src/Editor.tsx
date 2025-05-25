@@ -1,8 +1,5 @@
 import { open, save } from "@tauri-apps/plugin-dialog";
-import {
-  readTextFile,
-  writeTextFile
-} from "@tauri-apps/plugin-fs";
+import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import React, { useCallback, useState } from "react";
 import SplitPane from "react-split-pane";
 import DirectoryTree from "./components/DirectoryTree";
