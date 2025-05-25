@@ -8,11 +8,7 @@ async function getMarkdownTree(parentPath: string): Promise<TreeNode[]> {
 			const fullPath = `${parentPath}/${entry.name}`;
 			if (entry.isDirectory) {
 				const children = await getMarkdownTree(fullPath);
-				if (children.length > 0) {
-					return { name: entry.name, children };
-				} else {
-					return null;
-				}
+                return { name: entry.name, children };
 			} else if (entry.name.endsWith(".md")) {
 				return { name: entry.name, path: fullPath };
 			} else {
