@@ -224,30 +224,36 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 									</span>
 									{node.name}
 								</span>
-								{isOpen && renderTree(node.children, fullPath)}
-								{editingNode && editingNode.type === 'new' && editingNode.parentPath === relPath && (
-									<li>
-										<input
-											autoFocus
-											value={inputValue}
-											onChange={e => setInputValue(e.target.value)}
-											onKeyDown={handleInputKeyDown}
-											onBlur={handleInputCancel}
-											style={inputStyle}
-											placeholder={editingNode.isDir ? "新しいフォルダ名" : "新しいファイル名"}
-										/>
-									</li>
+								{isOpen && (
+									<ul style={{ listStyle: "none", paddingLeft: 12, margin: 0 }}>
+										{renderTree(node.children, fullPath)}
+										{editingNode && editingNode.type === 'new' && editingNode.parentPath === relPath && (
+											<li>
+												<input
+													autoFocus
+													value={inputValue}
+													onChange={e => setInputValue(e.target.value)}
+													onKeyDown={handleInputKeyDown}
+													onBlur={handleInputCancel}
+													style={inputStyle}
+													placeholder={editingNode.isDir ? "新しいフォルダ名" : "新しいファイル名"}
+												/>
+											</li>
+										)}
+										{editingNode && editingNode.type === 'rename' && editingNode.targetPath === relPath && (
+											<li>
+												<input
+													autoFocus
+													value={inputValue}
+													onChange={e => setInputValue(e.target.value)}
+													onKeyDown={handleInputKeyDown}
+													onBlur={handleInputCancel}
+													style={inputStyle}
+												/>
+											</li>
+										)}
+									</ul>
 								)}
-								{editingNode && editingNode.type === 'rename' && editingNode.targetPath === relPath ? (
-									<input
-										autoFocus
-										value={inputValue}
-										onChange={e => setInputValue(e.target.value)}
-										onKeyDown={handleInputKeyDown}
-										onBlur={handleInputCancel}
-										style={inputStyle}
-									/>
-								) : null}
 							</li>
 						);
 					} else {
