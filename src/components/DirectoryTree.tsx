@@ -19,7 +19,9 @@ type DirectoryTreeProps = {
 	onFileClick: (path: string) => void;
 	onOpenDirectory: () => void;
 	currentDirPath?: string | null;
-	onCreateFile: (dirPath: string) => Promise<void>;
+	onCreate: (parentPath: string, name: string, isDir: boolean) => Promise<void>;
+	onRename: (oldPath: string, newName: string, isDir: boolean) => Promise<void>;
+	onDelete: (path: string, isDir: boolean) => Promise<void>;
 };
 
 const DirectoryTree: React.FC<DirectoryTreeProps> = ({
@@ -27,7 +29,9 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 	onFileClick,
 	onOpenDirectory,
 	currentDirPath,
-	onCreateFile,
+	onCreate,
+	onRename,
+	onDelete,
 }) => {
 	const [openDirs, setOpenDirs] = useState<Record<string, boolean>>({});
 	const [hovered, setHovered] = useState<string | null>(null);
@@ -39,6 +43,19 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 	} | null>(null);
 	const [menuHoverIdx, setMenuHoverIdx] = useState<number | null>(null);
 
+  const [editingNode, setEditingNode] = useState<{
+    type: 'new' | 'rename';
+    parentPath?: string;
+    targetPath?: string;
+    isDir: boolean;
+  } | null>(null);
+  const [inputValue, setInputValue] = useState<string>("");
+  const [deletingNode, setDeletingNode] = useState<{
+    path: string;
+    isDir: boolean;
+  } | null>(null);
+
+  // @see: https://tauri.app/reference/javascript/dialog/#savedialogoptions
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "o") {
@@ -73,12 +90,89 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 		setContextMenu({ x: e.clientX, y: e.clientY, type, path });
 	};
 
-	const handleMenuClick = async (action: DirMenuAction) => {
-		if (action === DirMenuAction.NewFile && contextMenu) {
-			await onCreateFile(contextMenu.path);
-			setContextMenu(null);
+  const handleMenuClick = async (action: DirMenuAction) => {
+    if (!contextMenu) return;
+    if (action === DirMenuAction.NewFile) {
+      setEditingNode({ type: 'new', parentPath: contextMenu.path, isDir: false });
+      setInputValue('');
+      setContextMenu(null);
+    } else if (action === DirMenuAction.NewFolder) {
+      setEditingNode({ type: 'new', parentPath: contextMenu.path, isDir: true });
+      setInputValue('');
+      setContextMenu(null);
+    } else if (action === DirMenuAction.Rename) {
+      setEditingNode({ type: 'rename', targetPath: contextMenu.path, isDir: contextMenu.type === 'dir' });
+      setInputValue(contextMenu.path.split('/').pop() || '');
+      setContextMenu(null);
+    } else if (action === DirMenuAction.Delete) {
+      setDeletingNode({ path: contextMenu.path, isDir: contextMenu.type === 'dir' });
+      setContextMenu(null);
+    }
+  }
+
+	const handleInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter' && inputValue.trim()) {
+			if (editingNode?.type === 'new' && editingNode.parentPath) {
+				await onCreate(editingNode.parentPath, inputValue, editingNode.isDir);
+			} else if (editingNode?.type === 'rename' && editingNode.targetPath) {
+				await onRename(editingNode.targetPath, inputValue, editingNode.isDir);
+			}
+			setEditingNode(null);
+			setInputValue('');
+		} else if (e.key === 'Escape') {
+			setEditingNode(null);
+			setInputValue('');
 		}
-		// TODO: implement other actions
+	};
+
+	const handleInputCancel = () => {
+		setEditingNode(null);
+		setInputValue('');
+	};
+
+	const handleDeleteConfirm = async () => {
+		if (!deletingNode) return;
+		await onDelete(deletingNode.path, deletingNode.isDir);
+		setDeletingNode(null);
+	};
+
+	const inputStyle: React.CSSProperties = {
+		fontSize: '1rem',
+		padding: '2px 8px',
+		border: '1px solid #0078d4',
+		borderRadius: 4,
+		background: '#1e1e1e',
+		color: '#fff',
+		width: '90%',
+		outline: 'none',
+	};
+
+	const dialogOverlayStyle: React.CSSProperties = {
+		position: 'fixed',
+		top: 0, left: 0, right: 0, bottom: 0,
+		background: 'rgba(0,0,0,0.3)',
+		zIndex: 2000,
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+	};
+
+	const dialogStyle: React.CSSProperties = {
+		background: '#232323',
+		color: '#fff',
+		borderRadius: 8,
+		padding: 24,
+		minWidth: 320,
+		boxShadow: '0 2px 16px rgba(0,0,0,0.3)',
+	};
+
+	const dangerButtonStyle: React.CSSProperties = {
+		background: '#d32f2f',
+		color: '#fff',
+		border: 'none',
+		borderRadius: 4,
+		padding: '6px 16px',
+		cursor: 'pointer',
 	};
 
 	const renderTree = (nodes: TreeNode[], parentPath = "") => {
@@ -122,6 +216,29 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 									{node.name}
 								</span>
 								{isOpen && renderTree(node.children, fullPath)}
+								{editingNode && editingNode.type === 'new' && editingNode.parentPath === fullPath && (
+									<li>
+										<input
+											autoFocus
+											value={inputValue}
+											onChange={e => setInputValue(e.target.value)}
+											onKeyDown={handleInputKeyDown}
+											onBlur={handleInputCancel}
+											style={inputStyle}
+											placeholder={editingNode.isDir ? "新しいフォルダ名" : "新しいファイル名"}
+										/>
+									</li>
+								)}
+								{editingNode && editingNode.type === 'rename' && editingNode.targetPath === fullPath ? (
+									<input
+										autoFocus
+										value={inputValue}
+										onChange={e => setInputValue(e.target.value)}
+										onKeyDown={handleInputKeyDown}
+										onBlur={handleInputCancel}
+										style={inputStyle}
+									/>
+								) : null}
 							</li>
 						);
 					} else {
@@ -216,6 +333,19 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 							))}
 						</>
 					)}
+				</div>
+			)}
+			{deletingNode && (
+				<div style={dialogOverlayStyle}>
+					<div style={dialogStyle}>
+						<div style={{ marginBottom: 16 }}>
+							'{deletingNode.path.split('/').pop()}' を削除しますか？
+						</div>
+						<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+							<button onClick={handleDeleteConfirm} style={dangerButtonStyle}>削除</button>
+							<button onClick={() => setDeletingNode(null)}>キャンセル</button>
+						</div>
+					</div>
 				</div>
 			)}
 		</div>

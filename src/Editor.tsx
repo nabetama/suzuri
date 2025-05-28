@@ -1,5 +1,6 @@
-import { open, save } from "@tauri-apps/plugin-dialog";
-import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { join } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/plugin-dialog";
+import { mkdir, readTextFile, remove, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import React, { useCallback, useState } from "react";
 import SplitPane from "react-split-pane";
 import DirectoryTree from "./components/DirectoryTree";
@@ -44,17 +45,39 @@ const Editor: React.FC = () => {
 		}
 	}, [currentFilePath, markdown]);
 
-	const handleCreateFile = async () => {
-		const fileName = await save({
-			filters: [{ name: "Markdown files", extensions: ["md"] }],
-		});
-		if (!fileName) return;
-		await writeTextFile(fileName, "");
-		// update tree from root
-		if (dirPath) {
-			const mdTree = await getMarkdownTree(dirPath);
-			setTree(mdTree);
+	const handleCreate = async (parentPath: string, name: string, isDir: boolean) => {
+		if (!dirPath) return;
+		const absParent = parentPath === "" ? dirPath : `${dirPath}${parentPath}`;
+		const absPath = `${absParent}/${name}`;
+		if (isDir) {
+			await mkdir(absPath, { recursive: true });
+		} else {
+			await writeTextFile(absPath, "");
 		}
+		// update tree
+		const mdTree = await getMarkdownTree(dirPath);
+		setTree(mdTree);
+	};
+
+	const handleRename = async (oldPath: string, newName: string, isDir: boolean) => {
+		if (!dirPath) return;
+		const absOldPath = `${dirPath}${oldPath}`;
+		const parent = absOldPath.split("/").slice(0, -1).join("/");
+		const absNewPath = `${parent}/${newName}`;
+		await rename(absOldPath, absNewPath);
+		const mdTree = await getMarkdownTree(dirPath);
+		setTree(mdTree);
+	};
+
+	const handleDelete = async (path: string, isDir: boolean) => {
+		if (!dirPath) return;
+    let targetPath = path;
+    if (isDir) {
+      targetPath = await join(dirPath, path);
+    }
+		await remove(targetPath, { recursive: isDir });
+		const mdTree = await getMarkdownTree(dirPath);
+		setTree(mdTree);
 	};
 
 	return (
@@ -64,7 +87,9 @@ const Editor: React.FC = () => {
 				onFileClick={handleFileClick}
 				onOpenDirectory={handleOpenDirectory}
 				currentDirPath={dirPath}
-				onCreateFile={handleCreateFile}
+				onCreate={handleCreate}
+				onRename={handleRename}
+				onDelete={handleDelete}
 			/>
 			<SplitPane split="vertical" minSize={100} defaultSize="50%">
 				<MarkdownEditor
