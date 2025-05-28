@@ -5,14 +5,16 @@ import {
   FILE_MENU_ITEMS,
 } from "../constants/menu";
 import { TreeNode } from "../types/tree";
+import { sortTreeNodes } from "../utils/sortTreeNodes";
 import {
-  fileSpanStyle,
+  dangerButtonStyle,
+  dialogOverlayStyle,
+  dialogStyle,
   menuItemHoverStyle,
   menuItemStyle,
-  rootStyle,
-  rowBaseStyle,
-  rowHoverStyle,
+  rootStyle
 } from "./DirectoryTree.styles";
+import TreeNodeItem from "./TreeNodeItem";
 
 type DirectoryTreeProps = {
 	nodes: TreeNode[];
@@ -23,6 +25,8 @@ type DirectoryTreeProps = {
 	onRename: (oldPath: string, newName: string, isDir: boolean) => Promise<void>;
 	onDelete: (path: string, isDir: boolean) => Promise<void>;
 };
+
+type DirOrFile = "dir" | "file";
 
 const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 	nodes,
@@ -38,24 +42,23 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 	const [contextMenu, setContextMenu] = useState<{
 		x: number;
 		y: number;
-		type: "dir" | "file";
+		type: DirOrFile;
 		path: string;
 	} | null>(null);
 	const [menuHoverIdx, setMenuHoverIdx] = useState<number | null>(null);
+	const [editingNode, setEditingNode] = useState<{
+		type: 'new' | 'rename';
+		parentPath?: string;
+		targetPath?: string;
+		isDir: boolean;
+	} | null>(null);
+	const [inputValue, setInputValue] = useState<string>("");
+	const [deletingNode, setDeletingNode] = useState<{
+		path: string;
+		isDir: boolean;
+	} | null>(null);
 
-  const [editingNode, setEditingNode] = useState<{
-    type: 'new' | 'rename';
-    parentPath?: string;
-    targetPath?: string;
-    isDir: boolean;
-  } | null>(null);
-  const [inputValue, setInputValue] = useState<string>("");
-  const [deletingNode, setDeletingNode] = useState<{
-    path: string;
-    isDir: boolean;
-  } | null>(null);
-
-  // @see: https://tauri.app/reference/javascript/dialog/#savedialogoptions
+	// @see: https://tauri.app/reference/javascript/dialog/#savedialogoptions
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "o") {
@@ -81,7 +84,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 	// calculate position of context menu.
 	const handleContextMenu = (
 		e: React.MouseEvent,
-		type: "dir" | "file",
+		type: DirOrFile,
 		path: string,
 	) => {
 		// remove selection
@@ -136,148 +139,12 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 		setDeletingNode(null);
 	};
 
-	const inputStyle: React.CSSProperties = {
-		fontSize: '1rem',
-		padding: '2px 8px',
-		border: '1px solid #0078d4',
-		borderRadius: 4,
-		background: '#1e1e1e',
-		color: '#fff',
-		width: '90%',
-		outline: 'none',
-	};
-
-	const dialogOverlayStyle: React.CSSProperties = {
-		position: 'fixed',
-		top: 0, left: 0, right: 0, bottom: 0,
-		background: 'rgba(0,0,0,0.3)',
-		zIndex: 2000,
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'center',
-	};
-
-	const dialogStyle: React.CSSProperties = {
-		background: '#232323',
-		color: '#fff',
-		borderRadius: 8,
-		padding: 24,
-		minWidth: 320,
-		boxShadow: '0 2px 16px rgba(0,0,0,0.3)',
-	};
-
-	const dangerButtonStyle: React.CSSProperties = {
-		background: '#d32f2f',
-		color: '#fff',
-		border: 'none',
-		borderRadius: 4,
-		padding: '6px 16px',
-		cursor: 'pointer',
-	};
-
 	// dirPathからの相対パスを計算する関数
 	const getRelativePath = (fullPath: string) => {
 		if (!currentDirPath) return fullPath;
 		return fullPath.startsWith(currentDirPath)
 			? fullPath.slice(currentDirPath.length) || '/'
 			: fullPath;
-	};
-
-	const renderTree = (nodes: TreeNode[], parentPath = "") => {
-		const sortedNodes = [...nodes].sort((a, b) => {
-			if (a.children && !b.children) return -1;
-			if (!a.children && b.children) return 1;
-			return (a.name || "").localeCompare(b.name || "", "ja", {
-				numeric: true,
-				sensitivity: "base",
-			});
-		});
-
-		return (
-			<ul style={{ listStyle: "none", paddingLeft: 12, margin: 0 }}>
-				{sortedNodes.map((node) => {
-					const fullPath = node.path || `${parentPath}/${node.name}`;
-					const relPath = getRelativePath(fullPath);
-					if (node.children) {
-						const isOpen = openDirs[fullPath] ?? false;
-						return (
-							<li key={relPath} style={{ userSelect: "none" }}>
-								<span
-									style={
-										hovered === fullPath
-											? { ...rowBaseStyle, ...rowHoverStyle }
-											: rowBaseStyle
-									}
-									onClick={() => toggleDir(fullPath)}
-									onMouseEnter={() => setHovered(fullPath)}
-									onMouseLeave={() => setHovered(null)}
-									onContextMenu={(e) => handleContextMenu(e, "dir", relPath)}
-								>
-									<span
-										style={{
-											width: 16,
-											display: "inline-block",
-											textAlign: "center",
-										}}
-									>
-										{isOpen ? "▼" : "▶"}
-									</span>
-									{node.name}
-								</span>
-								{isOpen && (
-									<ul style={{ listStyle: "none", paddingLeft: 12, margin: 0 }}>
-										{renderTree(node.children, fullPath)}
-										{editingNode && editingNode.type === 'new' && editingNode.parentPath === relPath && (
-											<li>
-												<input
-													autoFocus
-													value={inputValue}
-													onChange={e => setInputValue(e.target.value)}
-													onKeyDown={handleInputKeyDown}
-													onBlur={handleInputCancel}
-													style={inputStyle}
-													placeholder={editingNode.isDir ? "新しいフォルダ名" : "新しいファイル名"}
-												/>
-											</li>
-										)}
-										{editingNode && editingNode.type === 'rename' && editingNode.targetPath === relPath && (
-											<li>
-												<input
-													autoFocus
-													value={inputValue}
-													onChange={e => setInputValue(e.target.value)}
-													onKeyDown={handleInputKeyDown}
-													onBlur={handleInputCancel}
-													style={inputStyle}
-												/>
-											</li>
-										)}
-									</ul>
-								)}
-							</li>
-						);
-					} else {
-						return (
-							<li key={relPath}>
-								<span
-									style={
-										hovered === fullPath
-											? { ...rowBaseStyle, ...rowHoverStyle, ...fileSpanStyle }
-											: { ...rowBaseStyle, ...fileSpanStyle }
-									}
-									onClick={() => onFileClick(relPath)}
-									onMouseEnter={() => setHovered(fullPath)}
-									onMouseLeave={() => setHovered(null)}
-									onContextMenu={(e) => handleContextMenu(e, "file", relPath)}
-								>
-									{node.name}
-								</span>
-							</li>
-						);
-					}
-				})}
-			</ul>
-		);
 	};
 
 	return (
@@ -294,7 +161,29 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 					{currentDirPath.split("/").pop()}
 				</div>
 			)}
-			{renderTree(nodes)}
+			<ul style={{ listStyle: "none", paddingLeft: 12, margin: 0 }}>
+				{sortTreeNodes(nodes).map(node => {
+					const rootPath = node.path || `/${node.name}`;
+					return (
+						<TreeNodeItem
+							key={rootPath}
+							node={node}
+							parentPath=""
+							currentDirPath={currentDirPath}
+							openDirs={openDirs}
+							hovered={hovered}
+							editingNode={editingNode}
+							inputValue={inputValue}
+							setHovered={setHovered}
+							toggleDir={toggleDir}
+							handleContextMenu={handleContextMenu}
+							handleInputKeyDown={handleInputKeyDown}
+							handleInputCancel={handleInputCancel}
+							setInputValue={setInputValue}
+						/>
+					);
+				})}
+			</ul>
 			{contextMenu && (
 				<div
 					style={{
