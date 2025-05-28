@@ -29,6 +29,7 @@ type TreeNodeItemProps = {
   handleInputKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   handleInputCancel: () => void;
   setInputValue: (v: string) => void;
+  onFileClick: (path: string) => void;
 };
 
 const getRelativePath = (currentDirPath: string | null, fullPath: string) => {
@@ -52,6 +53,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
   handleInputKeyDown,
   handleInputCancel,
   setInputValue,
+  onFileClick,
 }) => {
   const fullPath = node.path || `${parentPath}/${node.name}`;
   const relPath = getRelativePath(currentDirPath || null, fullPath);
@@ -94,6 +96,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
                 handleInputKeyDown={handleInputKeyDown}
                 handleInputCancel={handleInputCancel}
                 setInputValue={setInputValue}
+                onFileClick={onFileClick}
               />
             ))}
             {editingNode && editingNode.type === 'new' && editingNode.parentPath === relPath && (
@@ -144,7 +147,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
                 ? { ...rowBaseStyle, ...rowHoverStyle, ...fileSpanStyle }
                 : { ...rowBaseStyle, ...fileSpanStyle }
             }
-            onClick={() => {/* onFileClickは親でラップ */}}
+            onClick={() => onFileClick(relPath)}
             onMouseEnter={() => setHovered(fullPath)}
             onMouseLeave={() => setHovered(null)}
             onContextMenu={(e) => handleContextMenu(e, "file", relPath)}

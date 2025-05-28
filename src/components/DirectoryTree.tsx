@@ -180,6 +180,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 							handleInputKeyDown={handleInputKeyDown}
 							handleInputCancel={handleInputCancel}
 							setInputValue={setInputValue}
+							onFileClick={onFileClick}
 						/>
 					);
 				})}
