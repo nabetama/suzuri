@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import {
   DIR_MENU_ITEMS,
   DirMenuAction,
@@ -15,6 +15,27 @@ import {
   rootStyle
 } from "./DirectoryTree.styles";
 import TreeNodeItem from "./TreeNodeItem";
+
+export type DirectoryTreeContextType = {
+  currentDirPath?: string | null;
+  openDirs: Record<string, boolean>;
+  hovered: string | null;
+  editingNode: {
+    type: 'new' | 'rename';
+    parentPath?: string;
+    targetPath?: string;
+    isDir: boolean;
+  } | null;
+  inputValue: string;
+  setHovered: (path: string | null) => void;
+  toggleDir: (path: string) => void;
+  handleContextMenu: (e: React.MouseEvent, type: "dir" | "file", path: string) => void;
+  handleInputKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  handleInputCancel: () => void;
+  setInputValue: (v: string) => void;
+};
+
+export const DirectoryTreeContext = createContext<DirectoryTreeContextType | undefined>(undefined);
 
 type DirectoryTreeProps = {
 	nodes: TreeNode[];
@@ -139,121 +160,113 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 		setDeletingNode(null);
 	};
 
-	// dirPathからの相対パスを計算する関数
-	const getRelativePath = (fullPath: string) => {
-		if (!currentDirPath) return fullPath;
-		return fullPath.startsWith(currentDirPath)
-			? fullPath.slice(currentDirPath.length) || '/'
-			: fullPath;
+	const treeState = {
+		currentDirPath,
+		openDirs,
+		hovered,
+		editingNode,
+		inputValue,
+	};
+	const treeActions = {
+		setHovered,
+		toggleDir,
+		handleContextMenu,
+		handleInputKeyDown,
+		handleInputCancel,
+		setInputValue,
 	};
 
 	return (
-		<div style={rootStyle}>
-			{currentDirPath && (
-				<div
-					style={{
-						fontWeight: "bold",
-						fontSize: "1rem",
-						marginBottom: 8,
-						padding: "0.5rem 0.2rem",
-					}}
-				>
-					{currentDirPath.split("/").pop()}
-				</div>
-			)}
-			<ul style={{ listStyle: "none", paddingLeft: 12, margin: 0 }}>
-				{sortTreeNodes(nodes).map(node => {
-					const rootPath = node.path || `/${node.name}`;
-					return (
-						<TreeNodeItem
-							key={rootPath}
-							node={node}
-							parentPath=""
-							currentDirPath={currentDirPath}
-							openDirs={openDirs}
-							hovered={hovered}
-							editingNode={editingNode}
-							inputValue={inputValue}
-							setHovered={setHovered}
-							toggleDir={toggleDir}
-							handleContextMenu={handleContextMenu}
-							handleInputKeyDown={handleInputKeyDown}
-							handleInputCancel={handleInputCancel}
-							setInputValue={setInputValue}
-							onFileClick={onFileClick}
-						/>
-					);
-				})}
-			</ul>
-			{contextMenu && (
-				<div
-					style={{
-						position: "fixed",
-						top: contextMenu.y,
-						left: contextMenu.x,
-						background: "#232323",
-						color: "#fff",
-						borderRadius: 6,
-						boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-						zIndex: 1000,
-						minWidth: 160,
-						padding: "4px 0",
-						fontSize: "1rem",
-					}}
-				>
-					{contextMenu.type === "dir" ? (
-						<>
-							{DIR_MENU_ITEMS.map((item, idx) => (
-								<div
-									key={item.key}
-									style={
-										menuHoverIdx === idx
-											? { ...menuItemStyle, ...menuItemHoverStyle }
-											: menuItemStyle
-									}
-									onMouseEnter={() => setMenuHoverIdx(idx)}
-									onMouseLeave={() => setMenuHoverIdx(null)}
-									onClick={() => handleMenuClick(item.key)}
-								>
-									{item.label}
-								</div>
-							))}
-						</>
-					) : (
-						<>
-							{FILE_MENU_ITEMS.map((item, idx) => (
-								<div
-									key={item.key}
-									style={
-										menuHoverIdx === idx
-											? { ...menuItemStyle, ...menuItemHoverStyle }
-											: menuItemStyle
-									}
-									onMouseEnter={() => setMenuHoverIdx(idx)}
-									onMouseLeave={() => setMenuHoverIdx(null)}
-									onClick={() => handleMenuClick(item.key)}
-								>
-									{item.label}
-								</div>
-							))}
-						</>
-					)}
-				</div>
-			)}
-			{deletingNode && (
-				<div style={dialogOverlayStyle}>
-					<div style={dialogStyle}>
-						<div style={{ marginBottom: 16 }}>
-							'{deletingNode.path.split('/').pop()}' を削除しますか？
-						</div>
-						<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-							<button onClick={handleDeleteConfirm} style={dangerButtonStyle}>削除</button>
-							<button onClick={() => setDeletingNode(null)}>キャンセル</button>
+		<DirectoryTreeContext.Provider value={{ ...treeState, ...treeActions }}>
+			<div style={rootStyle}>
+				{currentDirPath && (
+					<div style={{ fontWeight: "bold", fontSize: "1rem", marginBottom: 8, padding: "0.5rem 0.2rem" }}>
+						{currentDirPath.split("/").pop()}
+					</div>
+				)}
+				<ul style={{ listStyle: "none", paddingLeft: 12, margin: 0 }}>
+					{sortTreeNodes(nodes).map(node => {
+						const rootPath = node.path || `/${node.name}`;
+						return (
+							<TreeNodeItem
+								key={rootPath}
+								node={node}
+								parentPath=""
+								onFileClick={onFileClick}
+							/>
+						);
+					})}
+				</ul>
+				{contextMenu && (
+					<div
+						style={{
+							position: "fixed",
+							top: contextMenu.y,
+							left: contextMenu.x,
+							background: "#232323",
+							color: "#fff",
+							borderRadius: 6,
+							boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+							zIndex: 1000,
+							minWidth: 160,
+							padding: "4px 0",
+							fontSize: "1rem",
+						}}
+					>
+						{contextMenu.type === "dir" ? (
+							<>
+								{DIR_MENU_ITEMS.map((item, idx) => (
+									<div
+										key={item.key}
+										style={
+											menuHoverIdx === idx
+												? { ...menuItemStyle, ...menuItemHoverStyle }
+												: menuItemStyle
+										}
+										onMouseEnter={() => setMenuHoverIdx(idx)}
+										onMouseLeave={() => setMenuHoverIdx(null)}
+										onClick={() => handleMenuClick(item.key)}
+									>
+										{item.label}
+									</div>
+								))}
+							</>
+						) : (
+							<>
+								{FILE_MENU_ITEMS.map((item, idx) => (
+									<div
+										key={item.key}
+										style={
+											menuHoverIdx === idx
+												? { ...menuItemStyle, ...menuItemHoverStyle }
+												: menuItemStyle
+										}
+										onMouseEnter={() => setMenuHoverIdx(idx)}
+										onMouseLeave={() => setMenuHoverIdx(null)}
+										onClick={() => handleMenuClick(item.key)}
+									>
+										{item.label}
+									</div>
+								))}
+							</>
+						)}
+					</div>
+				)}
+				{deletingNode && (
+					<div style={dialogOverlayStyle}>
+						<div style={dialogStyle}>
+							<div style={{ marginBottom: 16 }}>
+								'{deletingNode.path.split('/').pop()}' を削除しますか？
+							</div>
+							<div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+								<button onClick={handleDeleteConfirm} style={dangerButtonStyle}>削除</button>
+								<button onClick={() => setDeletingNode(null)}>キャンセル</button>
+							</div>
 						</div>
 					</div>
-				</div>
-			)}
-		</div>
+				)}
+			</div>
+		</DirectoryTreeContext.Provider>
 	);
 };
 

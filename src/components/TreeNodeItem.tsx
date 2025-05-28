@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useContext } from "react";
 import { TreeNode } from "../types/tree";
 import { sortTreeNodes } from "../utils/sortTreeNodes";
+import { DirectoryTreeContext } from "./DirectoryTree";
 import {
   fileSpanStyle,
   inputStyle,
@@ -8,27 +9,9 @@ import {
   rowHoverStyle,
 } from "./DirectoryTree.styles";
 
-type DirOrFile = "dir" | "file";
-
 type TreeNodeItemProps = {
   node: TreeNode;
   parentPath: string;
-  currentDirPath?: string | null;
-  openDirs: Record<string, boolean>;
-  hovered: string | null;
-  editingNode: {
-    type: 'new' | 'rename';
-    parentPath?: string;
-    targetPath?: string;
-    isDir: boolean;
-  } | null;
-  inputValue: string;
-  setHovered: (path: string | null) => void;
-  toggleDir: (path: string) => void;
-  handleContextMenu: (e: React.MouseEvent, type: DirOrFile, path: string) => void;
-  handleInputKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  handleInputCancel: () => void;
-  setInputValue: (v: string) => void;
   onFileClick: (path: string) => void;
 };
 
@@ -42,19 +25,24 @@ const getRelativePath = (currentDirPath: string | null, fullPath: string) => {
 const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
   node,
   parentPath,
-  currentDirPath,
-  openDirs,
-  hovered,
-  editingNode,
-  inputValue,
-  setHovered,
-  toggleDir,
-  handleContextMenu,
-  handleInputKeyDown,
-  handleInputCancel,
-  setInputValue,
   onFileClick,
 }) => {
+  const ctx = useContext(DirectoryTreeContext);
+  if (!ctx) throw new Error("DirectoryTreeContext not found");
+  const {
+    currentDirPath,
+    openDirs,
+    hovered,
+    editingNode,
+    inputValue,
+    setHovered,
+    toggleDir,
+    handleContextMenu,
+    handleInputKeyDown,
+    handleInputCancel,
+    setInputValue,
+  } = ctx;
+
   const fullPath = node.path || `${parentPath}/${node.name}`;
   const relPath = getRelativePath(currentDirPath || null, fullPath);
 
@@ -85,17 +73,6 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
                 key={child.path || `${fullPath}/${child.name}`}
                 node={child}
                 parentPath={fullPath}
-                currentDirPath={currentDirPath}
-                openDirs={openDirs}
-                hovered={hovered}
-                editingNode={editingNode}
-                inputValue={inputValue}
-                setHovered={setHovered}
-                toggleDir={toggleDir}
-                handleContextMenu={handleContextMenu}
-                handleInputKeyDown={handleInputKeyDown}
-                handleInputCancel={handleInputCancel}
-                setInputValue={setInputValue}
                 onFileClick={onFileClick}
               />
             ))}
