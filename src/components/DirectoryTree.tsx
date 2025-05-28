@@ -175,6 +175,14 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 		cursor: 'pointer',
 	};
 
+	// dirPathからの相対パスを計算する関数
+	const getRelativePath = (fullPath: string) => {
+		if (!currentDirPath) return fullPath;
+		return fullPath.startsWith(currentDirPath)
+			? fullPath.slice(currentDirPath.length) || '/'
+			: fullPath;
+	};
+
 	const renderTree = (nodes: TreeNode[], parentPath = "") => {
 		const sortedNodes = [...nodes].sort((a, b) => {
 			if (a.children && !b.children) return -1;
@@ -189,10 +197,11 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 			<ul style={{ listStyle: "none", paddingLeft: 12, margin: 0 }}>
 				{sortedNodes.map((node) => {
 					const fullPath = node.path || `${parentPath}/${node.name}`;
+					const relPath = getRelativePath(fullPath);
 					if (node.children) {
 						const isOpen = openDirs[fullPath] ?? false;
 						return (
-							<li key={fullPath} style={{ userSelect: "none" }}>
+							<li key={relPath} style={{ userSelect: "none" }}>
 								<span
 									style={
 										hovered === fullPath
@@ -202,7 +211,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 									onClick={() => toggleDir(fullPath)}
 									onMouseEnter={() => setHovered(fullPath)}
 									onMouseLeave={() => setHovered(null)}
-									onContextMenu={(e) => handleContextMenu(e, "dir", fullPath)}
+									onContextMenu={(e) => handleContextMenu(e, "dir", relPath)}
 								>
 									<span
 										style={{
@@ -216,7 +225,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 									{node.name}
 								</span>
 								{isOpen && renderTree(node.children, fullPath)}
-								{editingNode && editingNode.type === 'new' && editingNode.parentPath === fullPath && (
+								{editingNode && editingNode.type === 'new' && editingNode.parentPath === relPath && (
 									<li>
 										<input
 											autoFocus
@@ -229,7 +238,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 										/>
 									</li>
 								)}
-								{editingNode && editingNode.type === 'rename' && editingNode.targetPath === fullPath ? (
+								{editingNode && editingNode.type === 'rename' && editingNode.targetPath === relPath ? (
 									<input
 										autoFocus
 										value={inputValue}
@@ -243,17 +252,17 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 						);
 					} else {
 						return (
-							<li key={fullPath}>
+							<li key={relPath}>
 								<span
 									style={
 										hovered === fullPath
 											? { ...rowBaseStyle, ...rowHoverStyle, ...fileSpanStyle }
 											: { ...rowBaseStyle, ...fileSpanStyle }
 									}
-									onClick={() => onFileClick(fullPath)}
+									onClick={() => onFileClick(relPath)}
 									onMouseEnter={() => setHovered(fullPath)}
 									onMouseLeave={() => setHovered(null)}
-									onContextMenu={(e) => handleContextMenu(e, "file", fullPath)}
+									onContextMenu={(e) => handleContextMenu(e, "file", relPath)}
 								>
 									{node.name}
 								</span>

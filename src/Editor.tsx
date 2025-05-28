@@ -1,4 +1,3 @@
-import { join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 import { mkdir, readTextFile, remove, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import React, { useCallback, useState } from "react";
@@ -8,6 +7,7 @@ import MarkdownEditor from "./components/MarkdownEditor";
 import MarkdownPreview from "./components/MarkdownPreview";
 import { TreeNode } from "./types/tree";
 import getMarkdownTree from "./utils/getMarkdownTree";
+import { getParentPath, toAbsolutePath } from "./utils/pathUtils";
 
 const Editor: React.FC = () => {
 	const [markdown, setMarkdown] = useState("");
@@ -31,9 +31,11 @@ const Editor: React.FC = () => {
 	};
 
 	const handleFileClick = async (path: string) => {
-		const content = await readTextFile(path);
+		if (!dirPath) return;
+		const absPath = await toAbsolutePath(dirPath, path);
+		const content = await readTextFile(absPath);
 		setMarkdown(content);
-		setCurrentFilePath(path);
+		setCurrentFilePath(absPath);
 		setSaveStatus("");
 	};
 
@@ -47,23 +49,22 @@ const Editor: React.FC = () => {
 
 	const handleCreate = async (parentPath: string, name: string, isDir: boolean) => {
 		if (!dirPath) return;
-		const absParent = parentPath === "" ? dirPath : `${dirPath}${parentPath}`;
-		const absPath = `${absParent}/${name}`;
+		const absParent = parentPath === "" ? dirPath : await toAbsolutePath(dirPath, parentPath);
+		const absPath = await toAbsolutePath(absParent, name);
 		if (isDir) {
 			await mkdir(absPath, { recursive: true });
 		} else {
 			await writeTextFile(absPath, "");
 		}
-		// update tree
 		const mdTree = await getMarkdownTree(dirPath);
 		setTree(mdTree);
 	};
 
 	const handleRename = async (oldPath: string, newName: string, isDir: boolean) => {
 		if (!dirPath) return;
-		const absOldPath = `${dirPath}${oldPath}`;
-		const parent = absOldPath.split("/").slice(0, -1).join("/");
-		const absNewPath = `${parent}/${newName}`;
+		const absOldPath = await toAbsolutePath(dirPath, oldPath);
+		const parent = getParentPath(absOldPath);
+		const absNewPath = await toAbsolutePath(parent, newName);
 		await rename(absOldPath, absNewPath);
 		const mdTree = await getMarkdownTree(dirPath);
 		setTree(mdTree);
@@ -71,11 +72,8 @@ const Editor: React.FC = () => {
 
 	const handleDelete = async (path: string, isDir: boolean) => {
 		if (!dirPath) return;
-    let targetPath = path;
-    if (isDir) {
-      targetPath = await join(dirPath, path);
-    }
-		await remove(targetPath, { recursive: isDir });
+		const absPath = await toAbsolutePath(dirPath, path);
+		await remove(absPath, { recursive: isDir });
 		const mdTree = await getMarkdownTree(dirPath);
 		setTree(mdTree);
 	};
