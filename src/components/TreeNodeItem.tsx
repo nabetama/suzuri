@@ -91,7 +91,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
           </button>
         )}
         {isOpen && (
-          <ul className="list-none pl-4 m-0 ps-[16px]">
+          <ul className="list-none pl-4 m-0 ps-[12px]">
             {sortTreeNodes(node.children).map((child) => (
               <TreeNodeItem
                 key={child.path || `${fullPath}/${child.name}`}

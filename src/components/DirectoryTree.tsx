@@ -77,6 +77,8 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
     path: string;
     isDir: boolean;
   } | null>(null);
+  const [deleteHover, setDeleteHover] = useState(false);
+  const [cancelHover, setCancelHover] = useState(false);
 
   // @see: https://tauri.app/reference/javascript/dialog/#savedialogoptions
   useEffect(() => {
@@ -201,7 +203,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
             {currentDirPath.split("/").pop()}
           </div>
         )}
-        <ul className="list-none pl-0 m-0 ps-[16px]">
+        <ul className="list-none pl-0 m-0 ps-[12px]">
           {sortTreeNodes(nodes).map((node) => {
             const rootPath = node.path || `/${node.name}`;
             return (
@@ -216,17 +218,25 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
         </ul>
         {contextMenu && (
           <div
-            className="p-10 rounded-sm fixed bg-[#232323]"
-            style={{ top: contextMenu.y, left: contextMenu.x }}
+            className="fixed bg-[#232323]"
+            style={{
+              top: contextMenu.y,
+              left: contextMenu.x,
+              borderRadius: "3px",
+              padding: "5px",
+            }}
           >
-            <div className="">
+            <div>
               {(contextMenu.type === "dir"
                 ? DIR_MENU_ITEMS
                 : FILE_MENU_ITEMS
               ).map((item, idx) => (
                 <div
+                  style={{
+                    padding: "3px",
+                  }}
                   key={item.key}
-                  className={`px-4 py-1.5 text-[15px] text-[#c7c7c7] cursor-pointer rounded transition-colors duration-100 select-none hover:bg-[#264f78] hover:text-white focus:bg-[#264f78] focus:text-white outline-none ${menuHoverIdx === idx ? "bg-[#264f78] text-white" : ""}`}
+                  className={`px-4 py-1.5 text-[13px] text-[#c7c7c7] cursor-pointer rounded transition-colors duration-100 select-none hover:bg-[#333] hover:text-white focus:bg-[#264f78] focus:text-white outline-none ${menuHoverIdx === idx ? "bg-[#264f78] text-white" : ""}`}
                   onMouseEnter={() => setMenuHoverIdx(idx)}
                   onMouseLeave={() => setMenuHoverIdx(null)}
                   onClick={() => handleMenuClick(item.key)}
@@ -242,23 +252,65 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
           </div>
         )}
         {deletingNode && (
-          <div className="fixed inset-0 bg-black/30 z-[2000] flex items-center justify-center">
-            <div className="bg-[#232323] text-[#c7c7c7] rounded-xl p-8 min-w-[320px] shadow-2xl flex flex-col gap-4 items-end">
-              <div className="text-base w-full mb-2">
+          <div
+            className="fixed"
+            style={{
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0,0,0,0.3)",
+              zIndex: 2000,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              className="bg-[#232323] text-[#c7c7c7] grid justify-items-center"
+              style={{
+                background: "#232323",
+                color: "#fff",
+                borderRadius: 8,
+                padding: 24,
+                minWidth: 320,
+                boxShadow: "0 2px 16px rgba(0,0,0,0.3)",
+              }}
+            >
+              <div className="text-base w-full mb-2 mb-16">
                 '{deletingNode.path.split("/").pop()}' を削除しますか？
               </div>
-              <div className="flex gap-2 w-full justify-end">
+              <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
                 <button
                   type="button"
                   onClick={handleDeleteConfirm}
-                  className="bg-red-600 text-white rounded px-4 py-1.5 hover:bg-red-700 transition-colors"
+                  style={{
+                    background: deleteHover ? "#b71c1c" : "#d32f2f",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 4,
+                    padding: "6px 16px",
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={() => setDeleteHover(true)}
+                  onMouseLeave={() => setDeleteHover(false)}
                 >
                   削除
                 </button>
                 <button
                   type="button"
                   onClick={() => setDeletingNode(null)}
-                  className="bg-transparent border border-[#444] text-[#c7c7c7] rounded px-4 py-1.5 hover:bg-[#333] transition-colors"
+                  style={{
+                    background: cancelHover ? "#333" : "#111",
+                    color: "#fff",
+                    borderRadius: 4,
+                    padding: "6px 16px",
+                    cursor: "pointer",
+                    transition: "background 0.2s, border 0.2s, color 0.2s",
+                  }}
+                  onMouseEnter={() => setCancelHover(true)}
+                  onMouseLeave={() => setCancelHover(false)}
                 >
                   キャンセル
                 </button>
