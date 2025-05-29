@@ -1,7 +1,7 @@
 type TreeNode = {
-	name: string;
-	path?: string;
-	children?: TreeNode[];
+  name: string;
+  path?: string;
+  children?: TreeNode[];
 };
 
 export type { TreeNode };
