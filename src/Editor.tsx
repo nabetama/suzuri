@@ -9,6 +9,7 @@ import {
 import type React from "react";
 import { useCallback, useState } from "react";
 import SplitPane from "react-split-pane";
+import CommandOpenHint from "./components/CommandOpenHint";
 import DirectoryTree from "./components/DirectoryTree";
 import MarkdownEditor from "./components/MarkdownEditor";
 import MarkdownPreview from "./components/MarkdownPreview";
@@ -90,6 +91,9 @@ const Editor: React.FC = () => {
     setTree(mdTree);
   };
 
+  if (!dirPath) {
+    return <CommandOpenHint handleOpenDirectory={handleOpenDirectory} />;
+  }
   return (
     <SplitPane
       split="vertical"

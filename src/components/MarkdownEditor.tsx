@@ -28,7 +28,13 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
   return (
     <div
-      style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}
+      style={{
+        flex: 1,
+        minWidth: 0,
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
     >
       <div
         style={{
@@ -40,7 +46,12 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         }}
       >
         {filePath && (
-          <span style={{ color: "#888", fontSize: "0.9rem" }}>{filePath}</span>
+          <span
+            style={{ color: "#888", fontSize: "0.9rem", cursor: "pointer" }}
+            title={filePath}
+          >
+            {filePath.split("/").pop()}
+          </span>
         )}
         {saveStatus && (
           <span style={{ color: "green", fontSize: "0.9rem" }}>
@@ -56,10 +67,13 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           border: "none",
           borderRight: "1px solid #eee",
           outline: "none",
+          width: "100%",
+          height: "100%",
+          resize: "none",
         }}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="ここにMarkdownを入力してください"
+        placeholder="# title"
       />
     </div>
   );

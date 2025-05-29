@@ -5,6 +5,7 @@ import {
   DirMenuAction,
   FILE_MENU_ITEMS,
 } from "../constants/menu";
+import { useCommandOpenDirectory } from "../hooks/useCommandOpenDirectory";
 import type { TreeNode } from "../types/tree";
 import { sortTreeNodes } from "../utils/sortTreeNodes";
 import TreeNodeItem from "./TreeNodeItem";
@@ -80,17 +81,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   const [deleteHover, setDeleteHover] = useState(false);
   const [cancelHover, setCancelHover] = useState(false);
 
-  // @see: https://tauri.app/reference/javascript/dialog/#savedialogoptions
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "o") {
-        e.preventDefault();
-        onOpenDirectory();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onOpenDirectory]);
+  useCommandOpenDirectory(onOpenDirectory);
 
   useEffect(() => {
     if (!contextMenu) return;
