@@ -216,17 +216,17 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
         </ul>
         {contextMenu && (
           <div
-            className="fixed"
+            className="p-10 rounded-sm fixed bg-[#232323]"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
-            <div className="bg-[#232323] text-white rounded-lg shadow-lg z-[1000] min-w-[160px] py-1 text-base">
+            <div className="">
               {(contextMenu.type === "dir"
                 ? DIR_MENU_ITEMS
                 : FILE_MENU_ITEMS
               ).map((item, idx) => (
                 <div
                   key={item.key}
-                  className={`px-4 py-2 cursor-pointer rounded transition-colors duration-150 ${menuHoverIdx === idx ? "bg-white/10" : ""}`}
+                  className={`px-4 py-1.5 text-[15px] text-[#c7c7c7] cursor-pointer rounded transition-colors duration-100 select-none hover:bg-[#264f78] hover:text-white focus:bg-[#264f78] focus:text-white outline-none ${menuHoverIdx === idx ? "bg-[#264f78] text-white" : ""}`}
                   onMouseEnter={() => setMenuHoverIdx(idx)}
                   onMouseLeave={() => setMenuHoverIdx(null)}
                   onClick={() => handleMenuClick(item.key)}
@@ -243,19 +243,23 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
         )}
         {deletingNode && (
           <div className="fixed inset-0 bg-black/30 z-[2000] flex items-center justify-center">
-            <div className="bg-[#232323] text-white rounded-xl p-6 min-w-[320px] shadow-xl">
-              <div className="mb-4">
+            <div className="bg-[#232323] text-[#c7c7c7] rounded-xl p-8 min-w-[320px] shadow-2xl flex flex-col gap-4 items-end">
+              <div className="text-base w-full mb-2">
                 '{deletingNode.path.split("/").pop()}' を削除しますか？
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-2 w-full justify-end">
                 <button
                   type="button"
                   onClick={handleDeleteConfirm}
-                  className="bg-[#d32f2f] text-white border-none rounded px-4 py-1.5 cursor-pointer"
+                  className="bg-red-600 text-white rounded px-4 py-1.5 hover:bg-red-700 transition-colors"
                 >
                   削除
                 </button>
-                <button type="button" onClick={() => setDeletingNode(null)}>
+                <button
+                  type="button"
+                  onClick={() => setDeletingNode(null)}
+                  className="bg-transparent border border-[#444] text-[#c7c7c7] rounded px-4 py-1.5 hover:bg-[#333] transition-colors"
+                >
                   キャンセル
                 </button>
               </div>
