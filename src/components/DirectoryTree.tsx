@@ -215,6 +215,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
               left: contextMenu.x,
               borderRadius: "3px",
               padding: "5px",
+              zIndex: 2000,
             }}
           >
             <div>
