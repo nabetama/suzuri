@@ -4,16 +4,6 @@ import { marked } from "marked";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 
-const rootStyle: React.CSSProperties = {
-  wordBreak: "break-word",
-  flex: 1,
-  minWidth: 0,
-  padding: "1rem",
-  background: "#f9f9f9",
-  overflowY: "auto",
-  minHeight: 0,
-};
-
 type MarkdownPreviewProps = {
   markdown: string;
 };
@@ -62,7 +52,11 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ markdown }) => {
   }, []);
 
   return (
-    <div ref={ref} style={rootStyle}>
+    <div
+      ref={ref}
+      className="bg-[#141414] text-[#c7c7c7] w-full h-full min-h-0 overflow-y-auto p-[4px]"
+    >
+      <style>{"a { color: #38bdf8; }"}</style>
       {parse(html)}
     </div>
   );
