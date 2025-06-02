@@ -1,22 +1,26 @@
-import { DirEntry, readDir } from "@tauri-apps/plugin-fs";
-import { TreeNode } from "../types/tree";
+import { basename, join } from "@tauri-apps/api/path";
+import { readDir } from "@tauri-apps/plugin-fs";
+import type { TreeNode } from "../types/tree";
 
-async function getMarkdownTree(parentPath: string): Promise<TreeNode[]> {
-	const entries = await readDir(parentPath);
-	const result = await Promise.all(
-		entries.map(async (entry: DirEntry) => {
-			const fullPath = `${parentPath}/${entry.name}`;
-			if (entry.isDirectory) {
-				const children = await getMarkdownTree(fullPath);
-                return { name: entry.name, children };
-			} else if (entry.name.endsWith(".md")) {
-				return { name: entry.name, path: fullPath };
-			} else {
-				return null;
-			}
-		}),
-	);
-	return result.filter(Boolean) as TreeNode[];
+export async function getMarkdownTree(rootPath: string): Promise<TreeNode> {
+  const entries = await readDir(rootPath);
+  const children: TreeNode[] = [];
+
+  for (const entry of entries) {
+    const entryPath = await join(rootPath, entry.name);
+    if (entry.isDirectory) {
+      children.push(await getMarkdownTree(entryPath));
+    } else if (entry.name.endsWith(".md")) {
+      children.push({
+        name: entry.name,
+        path: entryPath,
+      });
+    }
+  }
+
+  return {
+    name: await basename(rootPath),
+    path: rootPath,
+    children,
+  };
 }
-
-export default getMarkdownTree;

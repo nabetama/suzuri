@@ -6,7 +6,6 @@ import { DirectoryTreeContext } from "./DirectoryTree";
 
 type TreeNodeItemProps = {
   node: TreeNode;
-  parentPath: string;
   onFileClick: (path: string) => void;
 };
 
@@ -17,11 +16,7 @@ const getRelativePath = (currentDirPath: string | null, fullPath: string) => {
     : fullPath;
 };
 
-const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
-  node,
-  parentPath,
-  onFileClick,
-}) => {
+const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
   const ctx = useContext(DirectoryTreeContext);
   if (!ctx) throw new Error("DirectoryTreeContext not found");
   const {
@@ -37,7 +32,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
     setInputValue,
   } = ctx;
 
-  const fullPath = node.path || `${parentPath}/${node.name}`;
+  const fullPath = node.path || `${currentDirPath}/${node.name}`;
   const relPath = getRelativePath(currentDirPath || null, fullPath);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -55,7 +50,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
       editingNode.type === "rename" &&
       editingNode.targetPath === relPath;
     return (
-      <li key={fullPath} className="select-none w-full">
+      <li key={fullPath} className="tree-node-item select-none w-full">
         {isRenaming ? (
           <input
             ref={inputRef}
@@ -75,14 +70,17 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
         ) : (
           <button
             type="button"
-            className="cursor-pointer flex items-center gap-1 text-[13px] text-[#c7c7c7] transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-[#222222] hover:text-white"
+            className="tree-node-item cursor-pointer flex items-center gap-1 text-[13px] text-[#c7c7c7] transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-[#222222] hover:text-white"
             onClick={() => toggleDir(fullPath)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") toggleDir(fullPath);
             }}
             onMouseEnter={() => setHovered(fullPath)}
             onMouseLeave={() => setHovered(null)}
-            onContextMenu={(e) => handleContextMenu(e, "dir", relPath)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              handleContextMenu(e, "dir", relPath);
+            }}
           >
             <span className="inline-block w-4 text-center mr-[4px]">
               {isOpen ? "▼" : "▶"}
@@ -94,16 +92,15 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
           <ul className="list-none pl-4 m-0 ps-[12px]">
             {sortTreeNodes(node.children).map((child) => (
               <TreeNodeItem
-                key={child.path || `${fullPath}/${child.name}`}
+                key={child.path}
                 node={child}
-                parentPath={fullPath}
                 onFileClick={onFileClick}
               />
             ))}
             {editingNode &&
               editingNode.type === "new" &&
               editingNode.parentPath === relPath && (
-                <li key={`new-input-${relPath}`}>
+                <li key={`new-input-${relPath}`} className="tree-node-item">
                   <input
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
@@ -121,7 +118,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
             {editingNode &&
               editingNode.type === "rename" &&
               editingNode.targetPath === relPath && (
-                <li key={`rename-input-${relPath}`}>
+                <li key={`rename-input-${relPath}`} className="tree-node-item">
                   <input
                     ref={inputRef}
                     value={inputValue}
@@ -145,7 +142,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
     );
   }
   return (
-    <li key={fullPath} className="w-full">
+    <li key={fullPath} className="tree-node-item w-full">
       {editingNode &&
       editingNode.type === "rename" &&
       editingNode.targetPath === relPath ? (
@@ -167,14 +164,17 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
       ) : (
         <button
           type="button"
-          className="cursor-pointer flex items-center gap-1 text-[13px] text-[#c7c7c7] select-none transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-[#222222] hover:text-white"
+          className="tree-node-item cursor-pointer flex items-center gap-1 text-[13px] text-[#c7c7c7] select-none transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-[#222222] hover:text-white"
           onClick={() => onFileClick(relPath)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") onFileClick(relPath);
           }}
           onMouseEnter={() => setHovered(fullPath)}
           onMouseLeave={() => setHovered(null)}
-          onContextMenu={(e) => handleContextMenu(e, "file", relPath)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            handleContextMenu(e, "file", relPath);
+          }}
         >
           {node.name}
         </button>
