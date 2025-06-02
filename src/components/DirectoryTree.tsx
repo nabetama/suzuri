@@ -6,6 +6,7 @@ import {
   FILE_MENU_ITEMS,
 } from "../constants/menu";
 import { useCommandOpenDirectory } from "../hooks/useCommandOpenDirectory";
+import type { NodeAction } from "../types/directoryTree";
 import type { TreeNode } from "../types/tree";
 import TreeNodeItem from "./TreeNodeItem";
 
@@ -41,22 +42,6 @@ type DirectoryTreeProps = {
 };
 
 type DirOrFile = "dir" | "file";
-
-type AbsolutePath = string;
-type ParentDirectoryPath = AbsolutePath;
-type NodePath = AbsolutePath;
-
-type NodeAction =
-  | {
-      type: "new";
-      isDir: boolean;
-      path: ParentDirectoryPath;
-    }
-  | {
-      type: "rename" | "delete";
-      isDir: boolean;
-      path: NodePath;
-    };
 
 const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   rootNode,
