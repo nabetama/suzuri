@@ -112,27 +112,6 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
                   />
                 </li>
               )}
-            {nodeAction &&
-              nodeAction.type === "rename" &&
-              nodeAction.path === fullPath && (
-                <li key={`rename-input-${fullPath}`} className="tree-node-item">
-                  <input
-                    ref={inputRef}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") {
-                        handleInputCancel();
-                      } else {
-                        handleInputKeyDown(e);
-                      }
-                    }}
-                    onBlur={handleInputCancel}
-                    className="text-[13px] px-2 py-1 border border-[#0078d4] rounded bg-[#23272e] text-[#d4d4d4] w-full outline-none focus:border-[#3794ff] focus:ring-1 focus:ring-[#3794ff] placeholder:text-[#888]"
-                    placeholder="新しい名前"
-                  />
-                </li>
-              )}
           </ul>
         )}
       </li>
