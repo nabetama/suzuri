@@ -9,13 +9,6 @@ type TreeNodeItemProps = {
   onFileClick: (path: string) => void;
 };
 
-const getRelativePath = (currentDirPath: string | null, fullPath: string) => {
-  if (!currentDirPath) return fullPath;
-  return fullPath.startsWith(currentDirPath)
-    ? fullPath.slice(currentDirPath.length) || "/"
-    : fullPath;
-};
-
 const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
   const ctx = useContext(DirectoryTreeContext);
   if (!ctx) throw new Error("DirectoryTreeContext not found");
