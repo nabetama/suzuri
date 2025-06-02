@@ -40,8 +40,6 @@ const Editor: React.FC = () => {
   };
 
   const handleFileClick = async (absPath: string) => {
-    // xxx: ここでは相対パスが来ている。絶対パスにする
-    console.log("handleFileClick", absPath);
     const content = await readTextFile(absPath);
     setMarkdown(content);
     setCurrentFilePath(absPath);
