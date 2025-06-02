@@ -1,25 +1,20 @@
 import type React from "react";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 import {
   DIR_MENU_ITEMS,
   DirMenuAction,
   FILE_MENU_ITEMS,
 } from "../constants/menu";
 import { useCommandOpenDirectory } from "../hooks/useCommandOpenDirectory";
+import type { NodeAction } from "../types/directoryTree";
 import type { TreeNode } from "../types/tree";
-import { sortTreeNodes } from "../utils/sortTreeNodes";
 import TreeNodeItem from "./TreeNodeItem";
 
 export type DirectoryTreeContextType = {
   currentDirPath?: string | null;
   openDirs: Record<string, boolean>;
   hovered: string | null;
-  editingNode: {
-    type: "new" | "rename";
-    parentPath?: string;
-    targetPath?: string;
-    isDir: boolean;
-  } | null;
+  nodeAction: NodeAction | null;
   inputValue: string;
   setHovered: (path: string | null) => void;
   toggleDir: (path: string) => void;
@@ -38,10 +33,9 @@ export const DirectoryTreeContext = createContext<
 >(undefined);
 
 type DirectoryTreeProps = {
-  nodes: TreeNode[];
+  rootNode: TreeNode | null;
   onFileClick: (path: string) => void;
   onOpenDirectory: () => void;
-  currentDirPath?: string | null;
   onCreate: (parentPath: string, name: string, isDir: boolean) => Promise<void>;
   onRename: (oldPath: string, newName: string, isDir: boolean) => Promise<void>;
   onDelete: (path: string, isDir: boolean) => Promise<void>;
@@ -50,10 +44,9 @@ type DirectoryTreeProps = {
 type DirOrFile = "dir" | "file";
 
 const DirectoryTree: React.FC<DirectoryTreeProps> = ({
-  nodes,
+  rootNode,
   onFileClick,
   onOpenDirectory,
-  currentDirPath,
   onCreate,
   onRename,
   onDelete,
@@ -67,19 +60,11 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
     path: string;
   } | null>(null);
   const [menuHoverIdx, setMenuHoverIdx] = useState<number | null>(null);
-  const [editingNode, setEditingNode] = useState<{
-    type: "new" | "rename";
-    parentPath?: string;
-    targetPath?: string;
-    isDir: boolean;
-  } | null>(null);
+  const [nodeAction, setNodeAction] = useState<NodeAction | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
-  const [deletingNode, setDeletingNode] = useState<{
-    path: string;
-    isDir: boolean;
-  } | null>(null);
   const [deleteHover, setDeleteHover] = useState(false);
   const [cancelHover, setCancelHover] = useState(false);
+  const inputRootRef = useRef<HTMLInputElement>(null);
 
   useCommandOpenDirectory(onOpenDirectory);
 
@@ -89,6 +74,17 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
   }, [contextMenu]);
+
+  useEffect(() => {
+    if (
+      nodeAction &&
+      nodeAction.type === "new" &&
+      nodeAction.path === "" &&
+      inputRootRef.current
+    ) {
+      inputRootRef.current.focus();
+    }
+  }, [nodeAction]);
 
   const toggleDir = (path: string) => {
     setOpenDirs((prev) => ({ ...prev, [path]: !prev[path] }));
@@ -109,33 +105,34 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   const handleMenuClick = async (action: DirMenuAction) => {
     if (!contextMenu) return;
     if (action === DirMenuAction.NewFile) {
-      setEditingNode({
+      setNodeAction({
         type: "new",
-        parentPath: contextMenu.path,
         isDir: false,
+        path: contextMenu.path,
       });
       setInputValue("");
       setContextMenu(null);
     } else if (action === DirMenuAction.NewFolder) {
-      setEditingNode({
+      setNodeAction({
         type: "new",
-        parentPath: contextMenu.path,
         isDir: true,
+        path: contextMenu.path,
       });
       setInputValue("");
       setContextMenu(null);
     } else if (action === DirMenuAction.Rename) {
-      setEditingNode({
+      setNodeAction({
         type: "rename",
-        targetPath: contextMenu.path,
         isDir: contextMenu.type === "dir",
+        path: contextMenu.path,
       });
       setInputValue(contextMenu.path.split("/").pop() || "");
       setContextMenu(null);
     } else if (action === DirMenuAction.Delete) {
-      setDeletingNode({
-        path: contextMenu.path,
+      setNodeAction({
+        type: "delete",
         isDir: contextMenu.type === "dir",
+        path: contextMenu.path,
       });
       setContextMenu(null);
     }
@@ -145,35 +142,35 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
     e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key === "Enter" && inputValue.trim()) {
-      if (editingNode?.type === "new" && editingNode.parentPath) {
-        await onCreate(editingNode.parentPath, inputValue, editingNode.isDir);
-      } else if (editingNode?.type === "rename" && editingNode.targetPath) {
-        await onRename(editingNode.targetPath, inputValue, editingNode.isDir);
+      if (nodeAction?.type === "new") {
+        await onCreate(nodeAction.path, inputValue, nodeAction.isDir);
+      } else if (nodeAction?.type === "rename") {
+        await onRename(nodeAction.path, inputValue, nodeAction.isDir);
       }
-      setEditingNode(null);
+      setNodeAction(null);
       setInputValue("");
     } else if (e.key === "Escape") {
-      setEditingNode(null);
+      setNodeAction(null);
       setInputValue("");
     }
   };
 
   const handleInputCancel = () => {
-    setEditingNode(null);
+    setNodeAction(null);
     setInputValue("");
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deletingNode) return;
-    await onDelete(deletingNode.path, deletingNode.isDir);
-    setDeletingNode(null);
+    if (!nodeAction || nodeAction.type !== "delete") return;
+    await onDelete(nodeAction.path, nodeAction.isDir);
+    setNodeAction(null);
   };
 
   const treeState = {
-    currentDirPath,
+    currentDirPath: rootNode?.path,
     openDirs,
     hovered,
-    editingNode,
+    nodeAction,
     inputValue,
   };
   const treeActions = {
@@ -187,26 +184,20 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 
   return (
     <DirectoryTreeContext.Provider value={{ ...treeState, ...treeActions }}>
-      <div className="bg-[#141414] text-[#7F7F7F] w-full min-w-0 border-r border-[#ddd] p-0 overflow-y-auto h-full">
-        {currentDirPath && (
-          //  ディレクトリ名
-          <div className="font-semibold text-[13px] mb-2 mt-3 ml-3 px-1 py-0.5 select-none">
-            {currentDirPath.split("/").pop()}
-          </div>
-        )}
-        <ul className="list-none pl-0 m-0 ps-[12px]">
-          {sortTreeNodes(nodes).map((node) => {
-            const rootPath = node.path || `/${node.name}`;
-            return (
-              <TreeNodeItem
-                key={rootPath}
-                node={node}
-                parentPath=""
-                onFileClick={onFileClick}
-              />
-            );
-          })}
-        </ul>
+      <div
+        className="bg-[#141414] text-[#7F7F7F] w-full min-w-0 border-r border-[#ddd] p-0 overflow-y-auto h-full"
+        onContextMenu={(e) => {
+          if ((e.target as HTMLElement).closest(".tree-node-item")) return;
+          e.preventDefault();
+          setContextMenu({
+            x: e.clientX,
+            y: e.clientY,
+            type: "dir",
+            path: rootNode?.path || "",
+          });
+        }}
+      >
+        {rootNode && <TreeNodeItem node={rootNode} onFileClick={onFileClick} />}
         {contextMenu && (
           <div
             className="fixed bg-[#232323]"
@@ -215,6 +206,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
               left: contextMenu.x,
               borderRadius: "3px",
               padding: "5px",
+              zIndex: 2000,
             }}
           >
             <div>
@@ -242,7 +234,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
             </div>
           </div>
         )}
-        {deletingNode && (
+        {nodeAction?.type === "delete" && (
           <div
             className="fixed"
             style={{
@@ -269,7 +261,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
               }}
             >
               <div className="text-base w-full mb-2 mb-16">
-                '{deletingNode.path.split("/").pop()}' を削除しますか？
+                '{nodeAction.path.split("/").pop()}' を削除しますか？
               </div>
               <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
                 <button
@@ -291,7 +283,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setDeletingNode(null)}
+                  onClick={() => setNodeAction(null)}
                   style={{
                     background: cancelHover ? "#333" : "#111",
                     color: "#fff",

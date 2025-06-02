@@ -1,3 +1,4 @@
+import { join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 import {
   mkdir,
@@ -14,13 +15,13 @@ import DirectoryTree from "./components/DirectoryTree";
 import MarkdownEditor from "./components/MarkdownEditor";
 import MarkdownPreview from "./components/MarkdownPreview";
 import type { TreeNode } from "./types/tree";
-import getMarkdownTree from "./utils/getMarkdownTree";
-import { getParentPath, toAbsolutePath } from "./utils/pathUtils";
+import { getMarkdownTree } from "./utils/getMarkdownTree";
+import { getParentPath } from "./utils/pathUtils";
 
 const Editor: React.FC = () => {
   const [markdown, setMarkdown] = useState("");
   const [dirPath, setDirPath] = useState<string | null>(null);
-  const [tree, setTree] = useState<TreeNode[]>([]);
+  const [tree, setTree] = useState<TreeNode | null>(null);
   const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string>("");
 
@@ -38,9 +39,9 @@ const Editor: React.FC = () => {
     }
   };
 
-  const handleFileClick = async (path: string) => {
-    if (!dirPath) return;
-    const absPath = await toAbsolutePath(dirPath, path);
+  const handleFileClick = async (absPath: string) => {
+    // xxx: ここでは相対パスが来ている。絶対パスにする
+    console.log("handleFileClick", absPath);
     const content = await readTextFile(absPath);
     setMarkdown(content);
     setCurrentFilePath(absPath);
@@ -56,14 +57,12 @@ const Editor: React.FC = () => {
   }, [currentFilePath, markdown]);
 
   const handleCreate = async (
-    parentPath: string,
+    parentAbsPath: string,
     name: string,
     isDir: boolean,
   ) => {
     if (!dirPath) return;
-    const absParent =
-      parentPath === "" ? dirPath : await toAbsolutePath(dirPath, parentPath);
-    const absPath = await toAbsolutePath(absParent, name);
+    const absPath = await join(parentAbsPath, name);
     if (isDir) {
       await mkdir(absPath, { recursive: true });
     } else {
@@ -73,19 +72,18 @@ const Editor: React.FC = () => {
     setTree(mdTree);
   };
 
-  const handleRename = async (oldPath: string, newName: string) => {
+  const handleRename = async (oldAbsPath: string, newName: string) => {
     if (!dirPath) return;
-    const absOldPath = await toAbsolutePath(dirPath, oldPath);
-    const parent = getParentPath(absOldPath);
-    const absNewPath = await toAbsolutePath(parent, newName);
-    await rename(absOldPath, absNewPath);
+    const parent = getParentPath(oldAbsPath);
+    const newAbsPath = await join(parent, newName);
+
+    await rename(oldAbsPath, newAbsPath);
     const mdTree = await getMarkdownTree(dirPath);
     setTree(mdTree);
   };
 
-  const handleDelete = async (path: string, isDir: boolean) => {
+  const handleDelete = async (absPath: string, isDir: boolean) => {
     if (!dirPath) return;
-    const absPath = await toAbsolutePath(dirPath, path);
     await remove(absPath, { recursive: isDir });
     const mdTree = await getMarkdownTree(dirPath);
     setTree(mdTree);
@@ -102,10 +100,9 @@ const Editor: React.FC = () => {
       className="h-screen"
     >
       <DirectoryTree
-        nodes={tree}
+        rootNode={tree}
         onFileClick={handleFileClick}
         onOpenDirectory={handleOpenDirectory}
-        currentDirPath={dirPath}
         onCreate={handleCreate}
         onRename={handleRename}
         onDelete={handleDelete}
