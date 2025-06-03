@@ -54,7 +54,7 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ markdown }) => {
   return (
     <div
       ref={ref}
-      className="bg-[#141414] text-[#c7c7c7] w-full h-full min-h-0 overflow-y-auto p-[4px]"
+      className="bg-[#141414] text-[#c7c7c7] w-full h-full min-h-0 overflow-y-auto p-[16px]"
     >
       <style>{"a { color: #38bdf8; }"}</style>
       {parse(html)}
