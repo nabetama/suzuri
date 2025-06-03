@@ -30,7 +30,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (nodeAction && nodeAction.type === "rename" && inputRef.current) {
+    if (nodeAction?.type === "rename" && inputRef.current) {
       inputRef.current.select();
     }
   }, [nodeAction]);
@@ -38,9 +38,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
   if (node.children) {
     const isOpen = openDirs[fullPath] ?? false;
     const isRenaming =
-      nodeAction &&
-      nodeAction.type === "rename" &&
-      nodeAction.path === fullPath;
+      nodeAction?.type === "rename" && nodeAction.path === fullPath;
     return (
       <li key={fullPath} className="tree-node-item select-none w-full">
         {isRenaming ? (
@@ -89,22 +87,20 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
                 onFileClick={onFileClick}
               />
             ))}
-            {nodeAction &&
-              nodeAction.type === "new" &&
-              nodeAction.path === fullPath && (
-                <li key={`new-input-${fullPath}`} className="tree-node-item">
-                  <input
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleInputKeyDown}
-                    onBlur={handleInputCancel}
-                    className="text-base px-2 py-0.5 border border-[#0078d4] rounded bg-[#1e1e1e] text-white w-[90%] outline-none"
-                    placeholder={
-                      nodeAction.isDir ? "新しいフォルダ名" : "新しいファイル名"
-                    }
-                  />
-                </li>
-              )}
+            {nodeAction?.type === "new" && nodeAction.path === fullPath && (
+              <li key={`new-input-${fullPath}`} className="tree-node-item">
+                <input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleInputKeyDown}
+                  onBlur={handleInputCancel}
+                  className="text-base px-2 py-0.5 border border-[#0078d4] rounded bg-[#1e1e1e] text-white w-[90%] outline-none pl-[16px]"
+                  placeholder={
+                    nodeAction.isDir ? "新しいフォルダ名" : "新しいファイル名"
+                  }
+                />
+              </li>
+            )}
           </ul>
         )}
       </li>
@@ -112,9 +108,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
   }
   return (
     <li key={fullPath} className="tree-node-item w-full">
-      {nodeAction &&
-      nodeAction.type === "rename" &&
-      nodeAction.path === fullPath ? (
+      {nodeAction?.type === "rename" && nodeAction.path === fullPath ? (
         <input
           ref={inputRef}
           value={inputValue}

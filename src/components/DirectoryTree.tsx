@@ -77,8 +77,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 
   useEffect(() => {
     if (
-      nodeAction &&
-      nodeAction.type === "new" &&
+      nodeAction?.type === "new" &&
       nodeAction.path === "" &&
       inputRootRef.current
     ) {
