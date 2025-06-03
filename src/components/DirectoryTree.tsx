@@ -1,5 +1,5 @@
 import type React from "react";
-import { createContext, useEffect, useRef, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import {
   DIR_MENU_ITEMS,
   DirMenuAction,
@@ -64,7 +64,6 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   const [inputValue, setInputValue] = useState<string>("");
   const [deleteHover, setDeleteHover] = useState(false);
   const [cancelHover, setCancelHover] = useState(false);
-  const inputRootRef = useRef<HTMLInputElement>(null);
 
   useCommandOpenDirectory(onOpenDirectory);
 
@@ -74,16 +73,6 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
   }, [contextMenu]);
-
-  useEffect(() => {
-    if (
-      nodeAction?.type === "new" &&
-      nodeAction.path === "" &&
-      inputRootRef.current
-    ) {
-      inputRootRef.current.focus();
-    }
-  }, [nodeAction]);
 
   const toggleDir = (path: string) => {
     setOpenDirs((prev) => ({ ...prev, [path]: !prev[path] }));

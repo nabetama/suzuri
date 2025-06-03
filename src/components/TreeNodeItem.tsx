@@ -30,7 +30,10 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (nodeAction?.type === "rename" && inputRef.current) {
+    if (
+      (nodeAction?.type === "rename" || nodeAction?.type === "new") &&
+      inputRef.current
+    ) {
       inputRef.current.select();
     }
   }, [nodeAction]);
@@ -90,6 +93,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
             {nodeAction?.type === "new" && nodeAction.path === fullPath && (
               <li key={`new-input-${fullPath}`} className="tree-node-item">
                 <input
+                  ref={inputRef}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleInputKeyDown}
