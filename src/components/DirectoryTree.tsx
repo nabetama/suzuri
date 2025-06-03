@@ -93,6 +93,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   const handleMenuClick = async (action: DirMenuAction) => {
     if (!contextMenu) return;
     if (action === DirMenuAction.NewFile) {
+      setOpenDirs((prev) => ({ ...prev, [contextMenu.path]: true }));
       setNodeAction({
         type: "new",
         isDir: false,
@@ -101,6 +102,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
       setInputValue("");
       setContextMenu(null);
     } else if (action === DirMenuAction.NewFolder) {
+      setOpenDirs((prev) => ({ ...prev, [contextMenu.path]: true }));
       setNodeAction({
         type: "new",
         isDir: true,
