@@ -1,11 +1,8 @@
 import type React from "react";
-import { createContext, useEffect, useState } from "react";
-import {
-  DIR_MENU_ITEMS,
-  DirMenuAction,
-  FILE_MENU_ITEMS,
-} from "../constants/menu";
+import { createContext, useEffect } from "react";
+import { DIR_MENU_ITEMS, FILE_MENU_ITEMS } from "../constants/menu";
 import { useCommandOpenDirectory } from "../hooks/useCommandOpenDirectory";
+import { useDirectoryTreeState } from "../hooks/useDirectoryTreeState";
 import type { NodeAction } from "../types/directoryTree";
 import type { TreeNode } from "../types/tree";
 import TreeNodeItem from "./TreeNodeItem";
@@ -41,8 +38,6 @@ type DirectoryTreeProps = {
   onDelete: (path: string, isDir: boolean) => Promise<void>;
 };
 
-type DirOrFile = "dir" | "file";
-
 const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   rootNode,
   onFileClick,
@@ -51,129 +46,57 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   onRename,
   onDelete,
 }) => {
-  const [openDirs, setOpenDirs] = useState<Record<string, boolean>>({});
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<{
-    x: number;
-    y: number;
-    type: DirOrFile;
-    path: string;
-  } | null>(null);
-  const [menuHoverIdx, setMenuHoverIdx] = useState<number | null>(null);
-  const [nodeAction, setNodeAction] = useState<NodeAction | null>(null);
-  const [inputValue, setInputValue] = useState<string>("");
-  const [deleteHover, setDeleteHover] = useState(false);
-  const [cancelHover, setCancelHover] = useState(false);
+  const treeState = useDirectoryTreeState(onCreate, onRename, onDelete);
 
   useCommandOpenDirectory(onOpenDirectory);
+
+  const {
+    openDirs,
+    hovered,
+    setHovered,
+    contextMenu,
+    setContextMenu,
+    menuHoverIdx,
+    setMenuHoverIdx,
+    nodeAction,
+    setNodeAction,
+    inputValue,
+    setInputValue,
+    deleteHover,
+    setDeleteHover,
+    cancelHover,
+    setCancelHover,
+    toggleDir,
+    handleContextMenu,
+    handleMenuClick,
+    handleInputKeyDown,
+    handleInputCancel,
+    handleDeleteConfirm,
+  } = treeState;
 
   useEffect(() => {
     if (!contextMenu) return;
     const close = () => setContextMenu(null);
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
-  }, [contextMenu]);
-
-  const toggleDir = (path: string) => {
-    setOpenDirs((prev) => ({ ...prev, [path]: !prev[path] }));
-  };
-
-  // calculate position of context menu.
-  const handleContextMenu = (
-    e: React.MouseEvent,
-    type: DirOrFile,
-    path: string,
-  ) => {
-    // remove selection
-    window.getSelection()?.removeAllRanges();
-    e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY, type, path });
-  };
-
-  const handleMenuClick = async (action: DirMenuAction) => {
-    if (!contextMenu) return;
-    if (action === DirMenuAction.NewFile) {
-      setOpenDirs((prev) => ({ ...prev, [contextMenu.path]: true }));
-      setNodeAction({
-        type: "new",
-        isDir: false,
-        path: contextMenu.path,
-      });
-      setInputValue("");
-      setContextMenu(null);
-    } else if (action === DirMenuAction.NewFolder) {
-      setOpenDirs((prev) => ({ ...prev, [contextMenu.path]: true }));
-      setNodeAction({
-        type: "new",
-        isDir: true,
-        path: contextMenu.path,
-      });
-      setInputValue("");
-      setContextMenu(null);
-    } else if (action === DirMenuAction.Rename) {
-      setNodeAction({
-        type: "rename",
-        isDir: contextMenu.type === "dir",
-        path: contextMenu.path,
-      });
-      setInputValue(contextMenu.path.split("/").pop() || "");
-      setContextMenu(null);
-    } else if (action === DirMenuAction.Delete) {
-      setNodeAction({
-        type: "delete",
-        isDir: contextMenu.type === "dir",
-        path: contextMenu.path,
-      });
-      setContextMenu(null);
-    }
-  };
-
-  const handleInputKeyDown = async (
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (e.key === "Enter" && inputValue.trim()) {
-      if (nodeAction?.type === "new") {
-        await onCreate(nodeAction.path, inputValue, nodeAction.isDir);
-      } else if (nodeAction?.type === "rename") {
-        await onRename(nodeAction.path, inputValue, nodeAction.isDir);
-      }
-      setNodeAction(null);
-      setInputValue("");
-    } else if (e.key === "Escape") {
-      setNodeAction(null);
-      setInputValue("");
-    }
-  };
-
-  const handleInputCancel = () => {
-    setNodeAction(null);
-    setInputValue("");
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!nodeAction || nodeAction.type !== "delete") return;
-    await onDelete(nodeAction.path, nodeAction.isDir);
-    setNodeAction(null);
-  };
-
-  const treeState = {
-    currentDirPath: rootNode?.path,
-    openDirs,
-    hovered,
-    nodeAction,
-    inputValue,
-  };
-  const treeActions = {
-    setHovered,
-    toggleDir,
-    handleContextMenu,
-    handleInputKeyDown,
-    handleInputCancel,
-    setInputValue,
-  };
+  }, [contextMenu, setContextMenu]);
 
   return (
-    <DirectoryTreeContext.Provider value={{ ...treeState, ...treeActions }}>
+    <DirectoryTreeContext.Provider
+      value={{
+        currentDirPath: rootNode?.path,
+        openDirs,
+        hovered,
+        nodeAction,
+        inputValue,
+        setHovered,
+        toggleDir,
+        handleContextMenu,
+        handleInputKeyDown,
+        handleInputCancel,
+        setInputValue,
+      }}
+    >
       <div
         className="bg-[#141414] text-[#7F7F7F] w-full min-w-0 border-r border-[#ddd] p-0 overflow-y-auto h-full"
         onContextMenu={(e) => {

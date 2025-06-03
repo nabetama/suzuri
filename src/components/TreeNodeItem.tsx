@@ -1,5 +1,7 @@
 import type React from "react";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useRef } from "react";
+import { useAutoSelectInput } from "../hooks/useAutoSelectInput";
+import { useNodeFullPath } from "../hooks/useNodeFullPath";
 import type { TreeNode } from "../types/tree";
 import { sortTreeNodes } from "../utils/sortTreeNodes";
 import { DirectoryTreeContext } from "./DirectoryTree";
@@ -25,18 +27,15 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
     setInputValue,
   } = ctx;
 
-  const fullPath = node.path || `${currentDirPath}/${node.name}`;
+  const fullPath = useNodeFullPath(node, currentDirPath);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (
-      (nodeAction?.type === "rename" || nodeAction?.type === "new") &&
-      inputRef.current
-    ) {
-      inputRef.current.select();
-    }
-  }, [nodeAction]);
+  useAutoSelectInput(
+    inputRef,
+    (nodeAction?.type === "rename" && nodeAction.path === fullPath) ||
+      (nodeAction?.type === "new" && nodeAction.path === fullPath),
+  );
 
   if (node.children) {
     const isOpen = openDirs[fullPath] ?? false;
