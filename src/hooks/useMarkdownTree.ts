@@ -55,22 +55,28 @@ export function useMarkdownTree() {
     isDir: boolean,
   ) => {
     if (!dirPath) return;
+
+    if (!name.endsWith(".md")) {
+      await message("The file name must end with .md.");
+      return;
+    }
+
     const absPath = await join(parentAbsPath, name);
 
     if (await exists(absPath)) {
-      message("The same file or directory already exists.");
+      await message("The same file or directory already exists.");
       return;
     }
 
     if (isDir) {
       await mkdir(absPath, { recursive: true }).catch((err) => {
-        message("Failed to create directory.", err);
+        console.error("Failed to create directory.", err);
       });
     } else {
       await writeTextFile(absPath, "", {
         createNew: true,
       }).catch((err) => {
-        message("Failed to create file.", err);
+        console.error("Failed to create file.", err);
       });
     }
     const mdTree = await getMarkdownTree(dirPath);
@@ -80,11 +86,16 @@ export function useMarkdownTree() {
   const handleRename = async (oldAbsPath: string, newName: string) => {
     if (!dirPath) return;
 
+    if (!newName.endsWith(".md")) {
+      await message("The file name must end with .md.");
+      return;
+    }
+
     const parent = getParentPath(oldAbsPath);
     const newAbsPath = await join(parent, newName);
 
     if (await exists(newAbsPath)) {
-      message("The same file or directory already exists.");
+      await message("The same file or directory already exists.");
       return;
     }
 
