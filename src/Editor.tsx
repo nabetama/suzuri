@@ -1,6 +1,7 @@
 import { join } from "@tauri-apps/api/path";
-import { open } from "@tauri-apps/plugin-dialog";
+import { message, open } from "@tauri-apps/plugin-dialog";
 import {
+  exists,
   mkdir,
   readTextFile,
   remove,
@@ -61,10 +62,22 @@ const Editor: React.FC = () => {
   ) => {
     if (!dirPath) return;
     const absPath = await join(parentAbsPath, name);
+
+    if (await exists(absPath)) {
+      message("The same file or directory already exists.");
+      return;
+    }
+
     if (isDir) {
-      await mkdir(absPath, { recursive: true });
+      await mkdir(absPath, { recursive: true }).catch((err) => {
+        message("Failed to create directory.", err);
+      });
     } else {
-      await writeTextFile(absPath, "");
+      await writeTextFile(absPath, "", {
+        createNew: true,
+      }).catch((err) => {
+        message("Failed to create file.", err);
+      });
     }
     const mdTree = await getMarkdownTree(dirPath);
     setTree(mdTree);
@@ -72,6 +85,12 @@ const Editor: React.FC = () => {
 
   const handleRename = async (oldAbsPath: string, newName: string) => {
     if (!dirPath) return;
+
+    if (await exists(newName)) {
+      message("The same file or directory already exists.");
+      return;
+    }
+
     const parent = getParentPath(oldAbsPath);
     const newAbsPath = await join(parent, newName);
 
