@@ -44,7 +44,7 @@ export function useMarkdownTree() {
   const handleSave = useCallback(async () => {
     if (currentFilePath) {
       await writeTextFile(currentFilePath, markdown);
-      setSaveStatus("保存しました");
+      setSaveStatus("saved");
       setTimeout(() => setSaveStatus(""), 1500);
       if (dirPath) {
         setTree(await getMarkdownTree(dirPath));
