@@ -59,19 +59,13 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
     menuHoverIdx,
     setMenuHoverIdx,
     nodeAction,
-    setNodeAction,
     inputValue,
     setInputValue,
-    deleteHover,
-    setDeleteHover,
-    cancelHover,
-    setCancelHover,
     toggleDir,
     handleContextMenu,
     handleMenuClick,
     handleInputKeyDown,
     handleInputCancel,
-    handleDeleteConfirm,
   } = treeState;
 
   useEffect(() => {
@@ -135,7 +129,23 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
                   className={`px-4 py-1.5 text-[13px] text-[#c7c7c7] cursor-pointer rounded transition-colors duration-100 select-none hover:bg-[#333] hover:text-white focus:bg-[#264f78] focus:text-white outline-none ${menuHoverIdx === idx ? "bg-[#264f78] text-white" : ""}`}
                   onMouseEnter={() => setMenuHoverIdx(idx)}
                   onMouseLeave={() => setMenuHoverIdx(null)}
-                  onClick={() => handleMenuClick(item.key)}
+                  onClick={async () => {
+                    if (item.key === "delete") {
+                      const ok = confirm(
+                        `'${contextMenu?.path.split("/").pop()}' を削除しますか？`,
+                      );
+
+                      if (ok) {
+                        await onDelete(
+                          contextMenu.path,
+                          contextMenu.type === "dir",
+                        );
+                      }
+                      setContextMenu(null);
+                    } else {
+                      handleMenuClick(item.key);
+                    }
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ")
                       handleMenuClick(item.key);
@@ -144,73 +154,6 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
                   {item.label}
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-        {nodeAction?.type === "delete" && (
-          <div
-            className="fixed"
-            style={{
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "rgba(0,0,0,0.3)",
-              zIndex: 2000,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              className="bg-[#232323] text-[#c7c7c7] grid justify-items-center"
-              style={{
-                background: "#232323",
-                color: "#fff",
-                borderRadius: 8,
-                padding: 24,
-                minWidth: 320,
-                boxShadow: "0 2px 16px rgba(0,0,0,0.3)",
-              }}
-            >
-              <div className="text-base w-full mb-2 mb-16">
-                '{nodeAction.path.split("/").pop()}' を削除しますか？
-              </div>
-              <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-                <button
-                  type="button"
-                  onClick={handleDeleteConfirm}
-                  style={{
-                    background: deleteHover ? "#b71c1c" : "#d32f2f",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 4,
-                    padding: "6px 16px",
-                    cursor: "pointer",
-                    transition: "background 0.2s",
-                  }}
-                  onMouseEnter={() => setDeleteHover(true)}
-                  onMouseLeave={() => setDeleteHover(false)}
-                >
-                  削除
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setNodeAction(null)}
-                  style={{
-                    background: cancelHover ? "#333" : "#111",
-                    color: "#fff",
-                    borderRadius: 4,
-                    padding: "6px 16px",
-                    cursor: "pointer",
-                    transition: "background 0.2s, border 0.2s, color 0.2s",
-                  }}
-                  onMouseEnter={() => setCancelHover(true)}
-                  onMouseLeave={() => setCancelHover(false)}
-                >
-                  キャンセル
-                </button>
-              </div>
             </div>
           </div>
         )}

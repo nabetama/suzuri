@@ -1,3 +1,4 @@
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { useEffect, useState } from "react";
 import { DirMenuAction } from "../constants/menu";
 import type { NodeAction } from "../types/directoryTree";
@@ -18,8 +19,6 @@ export function useDirectoryTreeState(
   const [menuHoverIdx, setMenuHoverIdx] = useState<number | null>(null);
   const [nodeAction, setNodeAction] = useState<NodeAction | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
-  const [deleteHover, setDeleteHover] = useState(false);
-  const [cancelHover, setCancelHover] = useState(false);
 
   useEffect(() => {
     if (!contextMenu) return;
@@ -103,8 +102,13 @@ export function useDirectoryTreeState(
   };
 
   const handleDeleteConfirm = async () => {
-    if (!nodeAction || nodeAction.type !== "delete") return;
-    await onDelete(nodeAction.path, nodeAction.isDir);
+    if (!nodeAction) return;
+    const ok = await confirm(
+      `'${nodeAction.path.split("/").pop()} を削除しますか？`,
+    );
+    if (ok) {
+      await onDelete(nodeAction.path, nodeAction.isDir);
+    }
     setNodeAction(null);
   };
 
@@ -121,10 +125,6 @@ export function useDirectoryTreeState(
     setNodeAction,
     inputValue,
     setInputValue,
-    deleteHover,
-    setDeleteHover,
-    cancelHover,
-    setCancelHover,
     toggleDir,
     handleContextMenu,
     handleMenuClick,
