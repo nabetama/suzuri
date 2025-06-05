@@ -59,10 +59,10 @@ export function useMarkdownTree() {
   ) => {
     if (!dirPath) return;
 
-    if (!name.endsWith(".md")) {
-      await message("The file name must end with .md.");
-      return;
-    }
+    // if (!name.endsWith(".md")) {
+    //   await message("The file name must end with .md.");
+    //   return;
+    // }
 
     const absPath = await join(parentAbsPath, name);
 
