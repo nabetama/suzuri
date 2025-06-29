@@ -37,10 +37,11 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
       (nodeAction?.type === "new" && nodeAction.path === fullPath),
   );
 
-  if (node.children) {
+  if (node.isDir) {
     const isOpen = openDirs[fullPath] ?? false;
     const isRenaming =
       nodeAction?.type === "rename" && nodeAction.path === fullPath;
+
     return (
       <li key={fullPath} className="tree-node-item select-none w-full">
         {isRenaming ? (
@@ -80,7 +81,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
             {node.name}
           </button>
         )}
-        {isOpen && (
+        {isOpen && node.children && (
           <ul className="list-none pl-4 m-0 ps-[12px]">
             {sortTreeNodes(node.children).map((child) => (
               <TreeNodeItem
