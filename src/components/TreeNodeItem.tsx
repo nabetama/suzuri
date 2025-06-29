@@ -9,9 +9,14 @@ import { DirectoryTreeContext } from "./DirectoryTree";
 type TreeNodeItemProps = {
   node: TreeNode;
   onFileClick: (path: string) => void;
+  updateDirChildren: (dirPath: string) => Promise<void>;
 };
 
-const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
+const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
+  node,
+  onFileClick,
+  updateDirChildren,
+}) => {
   const ctx = useContext(DirectoryTreeContext);
   if (!ctx) throw new Error("DirectoryTreeContext not found");
   const {
@@ -64,9 +69,23 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
           <button
             type="button"
             className="tree-node-item cursor-pointer flex items-center gap-1 text-[13px] text-[#c7c7c7] transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-[#222222] hover:text-white"
-            onClick={() => toggleDir(fullPath)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") toggleDir(fullPath);
+            onClick={async () => {
+              if (!isOpen && node.children === undefined) {
+                await updateDirChildren(fullPath);
+              }
+              toggleDir(fullPath);
+            }}
+            onKeyDown={async (e) => {
+              if (
+                (e.key === "Enter" || e.key === " ") &&
+                !isOpen &&
+                node.children === undefined
+              ) {
+                await updateDirChildren(fullPath);
+                toggleDir(fullPath);
+              } else if (e.key === "Enter" || e.key === " ") {
+                toggleDir(fullPath);
+              }
             }}
             onMouseEnter={() => setHovered(fullPath)}
             onMouseLeave={() => setHovered(null)}
@@ -88,6 +107,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ node, onFileClick }) => {
                 key={child.path}
                 node={child}
                 onFileClick={onFileClick}
+                updateDirChildren={updateDirChildren}
               />
             ))}
             {nodeAction?.type === "new" && nodeAction.path === fullPath && (

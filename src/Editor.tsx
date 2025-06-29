@@ -20,6 +20,7 @@ const Editor: React.FC = () => {
     handleCreate,
     handleRename,
     handleDelete,
+    updateDirChildren,
   } = useMarkdownTree();
 
   if (!dirPath) {
@@ -39,6 +40,7 @@ const Editor: React.FC = () => {
         onCreate={handleCreate}
         onRename={handleRename}
         onDelete={handleDelete}
+        updateDirChildren={updateDirChildren}
       />
       <SplitPane
         split="vertical"

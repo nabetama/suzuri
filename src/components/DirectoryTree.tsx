@@ -36,6 +36,7 @@ type DirectoryTreeProps = {
   onCreate: (parentPath: string, name: string, isDir: boolean) => Promise<void>;
   onRename: (oldPath: string, newName: string, isDir: boolean) => Promise<void>;
   onDelete: (path: string, isDir: boolean) => Promise<void>;
+  updateDirChildren: (dirPath: string) => Promise<void>;
 };
 
 const DirectoryTree: React.FC<DirectoryTreeProps> = ({
@@ -45,6 +46,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   onCreate,
   onRename,
   onDelete,
+  updateDirChildren,
 }) => {
   const treeState = useDirectoryTreeState(onCreate, onRename, onDelete);
 
@@ -104,7 +106,13 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
           });
         }}
       >
-        {rootNode && <TreeNodeItem node={rootNode} onFileClick={onFileClick} />}
+        {rootNode && (
+          <TreeNodeItem
+            node={rootNode}
+            onFileClick={onFileClick}
+            updateDirChildren={updateDirChildren}
+          />
+        )}
         {contextMenu && (
           <div
             className="fixed bg-[#232323]"
