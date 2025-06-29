@@ -11,11 +11,17 @@ export async function getMarkdownTree(rootPath: string): Promise<TreeNode> {
   for (const entry of entries) {
     const entryPath = await join(rootPath, entry.name);
     if (entry.isDirectory) {
-      children.push(await getMarkdownTree(entryPath));
+      children.push({
+        name: entry.name,
+        path: entryPath,
+        isDir: true,
+        children: undefined,
+      });
     } else {
       children.push({
         name: entry.name,
         path: entryPath,
+        isDir: false,
       });
     }
   }
@@ -23,6 +29,7 @@ export async function getMarkdownTree(rootPath: string): Promise<TreeNode> {
   return {
     name: await basename(rootPath),
     path: rootPath,
+    isDir: true,
     children,
   };
 }

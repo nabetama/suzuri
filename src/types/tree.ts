@@ -1,7 +1,6 @@
-type TreeNode = {
+export type TreeNode = {
   name: string;
-  path?: string;
+  path: string;
+  isDir: boolean;
   children?: TreeNode[];
 };
-
-export type { TreeNode };

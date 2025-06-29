@@ -35,6 +35,7 @@ export function useMarkdownTree() {
   };
 
   const handleFileClick = async (absPath: string) => {
+    console.log("handleFileClick", absPath);
     const content = await readTextFile(absPath);
     setMarkdown(content);
     setCurrentFilePath(absPath);
@@ -114,6 +115,28 @@ export function useMarkdownTree() {
     setTree(mdTree);
   };
 
+  // 指定ディレクトリのchildrenだけを非同期で取得してtreeにセットする
+  const updateDirChildren = async (dirPath: string) => {
+    if (!tree) return;
+    const dirNode = findNodeByPath(tree, dirPath);
+    if (dirNode?.isDir) {
+      const newNode = await getMarkdownTree(dirPath);
+      dirNode.children = newNode.children;
+      setTree({ ...tree });
+    }
+  };
+
+  // tree内からパスでノードを探すユーティリティ
+  function findNodeByPath(node: TreeNode, path: string): TreeNode | null {
+    if (node.path === path) return node;
+    if (!node.children) return null;
+    for (const child of node.children) {
+      const found = findNodeByPath(child, path);
+      if (found) return found;
+    }
+    return null;
+  }
+
   return {
     markdown,
     setMarkdown,
@@ -127,5 +150,6 @@ export function useMarkdownTree() {
     handleCreate,
     handleRename,
     handleDelete,
+    updateDirChildren,
   };
 }
