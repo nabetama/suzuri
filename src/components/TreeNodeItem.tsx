@@ -1,5 +1,5 @@
 import type React from "react";
-import { useContext, useRef } from "react";
+import { useContext, useRef, useState } from "react";
 import { useAutoSelectInput } from "../hooks/useAutoSelectInput";
 import { useNodeFullPath } from "../hooks/useNodeFullPath";
 import type { TreeNode } from "../types/tree";
@@ -35,6 +35,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
   const fullPath = useNodeFullPath(node, currentDirPath);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
 
   useAutoSelectInput(
     inputRef,
@@ -46,6 +47,30 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
     const isOpen = openDirs[fullPath] ?? false;
     const isRenaming =
       nodeAction?.type === "rename" && nodeAction.path === fullPath;
+
+    const handleDirClick = async () => {
+      if (!isOpen && node.children === undefined) {
+        setLoading(true);
+        await updateDirChildren(fullPath);
+        setLoading(false);
+      }
+      toggleDir(fullPath);
+    };
+
+    const handleDirKeyDown = async (e: React.KeyboardEvent) => {
+      if (
+        (e.key === "Enter" || e.key === " ") &&
+        !isOpen &&
+        node.children === undefined
+      ) {
+        setLoading(true);
+        await updateDirChildren(fullPath);
+        setLoading(false);
+        toggleDir(fullPath);
+      } else if (e.key === "Enter" || e.key === " ") {
+        toggleDir(fullPath);
+      }
+    };
 
     return (
       <li key={fullPath} className="tree-node-item select-none w-full">
@@ -69,24 +94,8 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
           <button
             type="button"
             className="tree-node-item cursor-pointer flex items-center gap-1 text-[13px] text-[#c7c7c7] transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-[#222222] hover:text-white"
-            onClick={async () => {
-              if (!isOpen && node.children === undefined) {
-                await updateDirChildren(fullPath);
-              }
-              toggleDir(fullPath);
-            }}
-            onKeyDown={async (e) => {
-              if (
-                (e.key === "Enter" || e.key === " ") &&
-                !isOpen &&
-                node.children === undefined
-              ) {
-                await updateDirChildren(fullPath);
-                toggleDir(fullPath);
-              } else if (e.key === "Enter" || e.key === " ") {
-                toggleDir(fullPath);
-              }
-            }}
+            onClick={handleDirClick}
+            onKeyDown={handleDirKeyDown}
             onMouseEnter={() => setHovered(fullPath)}
             onMouseLeave={() => setHovered(null)}
             onContextMenu={(e) => {
@@ -100,16 +109,18 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
             {node.name}
           </button>
         )}
-        {isOpen && node.children && (
+        {isOpen && (
           <ul className="list-none pl-4 m-0 ps-[12px]">
-            {sortTreeNodes(node.children).map((child) => (
-              <TreeNodeItem
-                key={child.path}
-                node={child}
-                onFileClick={onFileClick}
-                updateDirChildren={updateDirChildren}
-              />
-            ))}
+            {loading && <li key="loading">- Loading...</li>}
+            {node.children &&
+              sortTreeNodes(node.children).map((child) => (
+                <TreeNodeItem
+                  key={child.path}
+                  node={child}
+                  onFileClick={onFileClick}
+                  updateDirChildren={updateDirChildren}
+                />
+              ))}
             {nodeAction?.type === "new" && nodeAction.path === fullPath && (
               <li key={`new-input-${fullPath}`} className="tree-node-item">
                 <input
