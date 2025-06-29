@@ -1,12 +1,13 @@
-import { TreeNode } from "../types/tree";
+import type { TreeNode } from "../types/tree";
 
 export const sortTreeNodes = (nodes: TreeNode[]) => {
-	return [...nodes].sort((a, b) => {
-	  if (a.children && !b.children) return -1;
-	  if (!a.children && b.children) return 1;
-	  return (a.name || "").localeCompare(b.name || "", "ja", {
-		numeric: true,
-		sensitivity: "base",
-	  });
-	})
-  };
+  console.log("nodes", nodes);
+  return [...nodes].sort((a, b) => {
+    if (a.isDir && !b.isDir) return -1;
+    if (!a.isDir && b.isDir) return 1;
+    return (a.name || "").localeCompare(b.name || "", "ja", {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
+};
