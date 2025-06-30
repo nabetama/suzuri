@@ -90,8 +90,15 @@ button:active {
 }
 
 input,
-button {
+button,
+textarea {
 	outline: none;
+}
+
+textarea {
+	font-family: inherit;
+	background-color: #ffffff;
+	color: #111827;
 }
 
 #greet-input {
@@ -134,6 +141,11 @@ button {
 	input {
 		background-color: #1f2937;
 		color: #f3f4f6;
+	}
+
+	textarea {
+		background-color: #1a1a1a;
+		color: #c7c7c7;
 	}
 
 	a:hover {
