@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @layer base {
 	@font-face {
 		font-family: "Fira Code";
@@ -38,25 +39,29 @@
 		font-display: swap;
 	}
 }
+/* Light mode (default) */
 body,
 html {
 	font-family: "Fira Code", "Segoe UI", "Meiryo", sans-serif !important;
-	background: #141414 !important;
+	background-color: #ffffff;
+	color: #111827;
 }
 
 .Pane {
 	overflow: auto;
-	background: #fff !important;
+	background-color: #ffffff;
 }
+
 .Resizer {
-	background: #eee;
+	background-color: #e5e7eb;
 	cursor: col-resize;
 	width: 2px;
 	z-index: 10;
 	transition: background 0.2s;
 }
+
 .Resizer:hover {
-	background: #ccc;
+	background-color: #9ca3af;
 }
 
 button {
@@ -66,10 +71,9 @@ button {
 	font-size: 1em;
 	font-weight: 500;
 	font-family: inherit;
-	color: #0f0f0f;
 	background-color: #ffffff;
+	color: #111827;
 	transition: border-color 0.25s;
-	/* box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2); */
 }
 
 button {
@@ -79,9 +83,10 @@ button {
 button:hover {
 	border-color: #396cd8;
 }
+
 button:active {
 	border-color: #396cd8;
-	background-color: #e8e8e8;
+	background-color: #f3f4f6;
 }
 
 input,
@@ -93,22 +98,45 @@ button {
 	margin-right: 5px;
 }
 
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
-	:root {
-		color: #f6f6f6;
-		background-color: #2f2f2f;
+	body,
+	html {
+		background-color: #141414;
+		color: #f3f4f6;
+	}
+
+	.Pane {
+		background-color: #1a1a1a;
+	}
+
+	.Resizer {
+		background-color: #374151;
+	}
+
+	.Resizer:hover {
+		background-color: #4b5563;
+	}
+
+	button {
+		background-color: #1f2937;
+		color: #f3f4f6;
+	}
+
+	button:hover {
+		border-color: #396cd8;
+	}
+
+	button:active {
+		background-color: #374151;
+	}
+
+	input {
+		background-color: #1f2937;
+		color: #f3f4f6;
 	}
 
 	a:hover {
 		color: #24c8db;
-	}
-
-	input,
-	button {
-		color: #ffffff;
-		background-color: #0f0f0f98;
-	}
-	button:active {
-		background-color: #0f0f0f69;
 	}
 }

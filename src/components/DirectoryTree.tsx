@@ -94,7 +94,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
       }}
     >
       <div
-        className="bg-[#141414] text-[#7F7F7F] w-full min-w-0 border-r border-[#ddd] p-0 overflow-y-auto h-full"
+        className="bg-white dark:bg-[#141414] text-gray-700 dark:text-[#7F7F7F] w-full min-w-0 border-r border-gray-200 dark:border-gray-700 p-0 overflow-y-auto h-full"
         onContextMenu={(e) => {
           if ((e.target as HTMLElement).closest(".tree-node-item")) return;
           e.preventDefault();
@@ -115,7 +115,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
         )}
         {contextMenu && (
           <div
-            className="fixed bg-[#232323]"
+            className="fixed bg-white dark:bg-[#232323] border border-gray-200 dark:border-gray-700 shadow-lg"
             style={{
               top: contextMenu.y,
               left: contextMenu.x,
@@ -134,7 +134,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
                     padding: "3px",
                   }}
                   key={item.key}
-                  className={`px-4 py-1.5 text-[13px] text-[#c7c7c7] cursor-pointer rounded transition-colors duration-100 select-none hover:bg-[#333] hover:text-white focus:bg-[#264f78] focus:text-white outline-none ${menuHoverIdx === idx ? "bg-[#264f78] text-white" : ""}`}
+                  className={`px-4 py-1.5 text-[13px] text-gray-700 dark:text-[#c7c7c7] cursor-pointer rounded transition-colors duration-100 select-none hover:bg-gray-100 dark:hover:bg-[#333] hover:text-gray-900 dark:hover:text-white focus:bg-blue-500 dark:focus:bg-[#264f78] focus:text-white outline-none ${menuHoverIdx === idx ? "bg-blue-500 dark:bg-[#264f78] text-white" : ""}`}
                   onMouseEnter={() => setMenuHoverIdx(idx)}
                   onMouseLeave={() => setMenuHoverIdx(null)}
                   onClick={async () => {

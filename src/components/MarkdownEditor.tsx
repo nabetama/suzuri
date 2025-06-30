@@ -27,50 +27,24 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   }, [onSave]);
 
   return (
-    <div
-      style={{
-        flex: 1,
-        minWidth: 0,
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-      }}
-    >
-      <div
-        style={{
-          padding: "0.5rem 1rem",
-          borderBottom: "1px solid #eee",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
+    <div className="flex-1 min-w-0 flex flex-col h-full">
+      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
         {filePath && (
           <span
-            style={{ color: "#888", fontSize: "0.9rem", cursor: "pointer" }}
+            className="text-gray-500 dark:text-gray-400 text-sm cursor-pointer"
             title={filePath}
           >
             {filePath.split("/").pop()}
           </span>
         )}
         {saveStatus && (
-          <span style={{ color: "green", fontSize: "0.9rem" }}>
+          <span className="text-green-600 dark:text-green-400 text-sm">
             {saveStatus}
           </span>
         )}
       </div>
       <textarea
-        style={{
-          flex: 1,
-          fontSize: "1rem",
-          padding: "1rem",
-          border: "none",
-          borderRight: "1px solid #eee",
-          outline: "none",
-          width: "100%",
-          height: "100%",
-          resize: "none",
-        }}
+        className="flex-1 text-base p-4 border-0 border-r border-gray-200 dark:border-gray-700 outline-none w-full h-full resize-none bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="# title"

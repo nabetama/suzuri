@@ -87,13 +87,13 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
               }
             }}
             onBlur={handleInputCancel}
-            className="text-[13px] px-2 py-1 border border-[#0078d4] rounded bg-[#23272e] text-[#d4d4d4] w-full outline-none focus:border-[#3794ff] focus:ring-1 focus:ring-[#3794ff] placeholder:text-[#888]"
+            className="text-[13px] px-2 py-1 border border-blue-500 dark:border-[#0078d4] rounded bg-white dark:bg-[#23272e] text-gray-900 dark:text-[#d4d4d4] w-full outline-none focus:border-blue-600 dark:focus:border-[#3794ff] focus:ring-1 focus:ring-blue-600 dark:focus:ring-[#3794ff] placeholder:text-gray-400 dark:placeholder:text-[#888]"
             placeholder="新しい名前"
           />
         ) : (
           <button
             type="button"
-            className="tree-node-item cursor-pointer flex items-center gap-1 text-[13px] text-[#c7c7c7] transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-[#222222] hover:text-white"
+            className="tree-node-item cursor-pointer flex items-center gap-1 text-[13px] text-gray-700 dark:text-[#c7c7c7] transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white"
             onClick={handleDirClick}
             onKeyDown={handleDirKeyDown}
             onMouseEnter={() => setHovered(fullPath)}
@@ -162,7 +162,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
       ) : (
         <button
           type="button"
-          className="tree-node-item cursor-pointer flex items-center gap-1 text-[13px] text-[#c7c7c7] select-none transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-[#222222] hover:text-white"
+          className="tree-node-item cursor-pointer flex items-center gap-1 text-[13px] text-gray-700 dark:text-[#c7c7c7] select-none transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white"
           onClick={() => onFileClick(fullPath)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") onFileClick(fullPath);
