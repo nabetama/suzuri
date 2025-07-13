@@ -3,154 +3,163 @@
 @tailwind utilities;
 
 @layer base {
-	@font-face {
-		font-family: "Fira Code";
-		src: url("./assets/FiraCode-Light.woff2") format("woff2");
-		font-weight: 300;
-		font-style: normal;
-		font-display: swap;
-	}
-	@font-face {
-		font-family: "Fira Code";
-		src: url("./assets/FiraCode-Regular.woff2") format("woff2");
-		font-weight: 400;
-		font-style: normal;
-		font-display: swap;
-	}
-	@font-face {
-		font-family: "Fira Code";
-		src: url("./assets/FiraCode-Medium.woff2") format("woff2");
-		font-weight: 500;
-		font-style: normal;
-		font-display: swap;
-	}
-	@font-face {
-		font-family: "Fira Code";
-		src: url("./assets/FiraCode-SemiBold.woff2") format("woff2");
-		font-weight: 600;
-		font-style: normal;
-		font-display: swap;
-	}
-	@font-face {
-		font-family: "Fira Code";
-		src: url("./assets/FiraCode-Bold.woff2") format("woff2");
-		font-weight: 700;
-		font-style: normal;
-		font-display: swap;
-	}
+  @font-face {
+    font-family: "Fira Code";
+    src: url("./assets/FiraCode-Light.woff2") format("woff2");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Fira Code";
+    src: url("./assets/FiraCode-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Fira Code";
+    src: url("./assets/FiraCode-Medium.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Fira Code";
+    src: url("./assets/FiraCode-SemiBold.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Fira Code";
+    src: url("./assets/FiraCode-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
 }
 /* Light mode (default) */
 body,
 html {
-	font-family: "Fira Code", "Segoe UI", "Meiryo", sans-serif !important;
-	background-color: #ffffff;
-	color: #111827;
+  font-family: "Fira Code", "Segoe UI", "Meiryo", sans-serif !important;
+  background-color: #ffffff;
+  color: #111827;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .Pane {
-	overflow: auto;
-	background-color: #ffffff;
+  overflow: auto;
+  background-color: #ffffff;
 }
 
 .Resizer {
-	background-color: #e5e7eb;
-	cursor: col-resize;
-	width: 2px;
-	z-index: 10;
-	transition: background 0.2s;
+  background-color: #e5e7eb;
+  cursor: col-resize;
+  width: 2px;
+  z-index: 10;
+  transition: background 0.2s;
 }
 
 .Resizer:hover {
-	background-color: #9ca3af;
+  background-color: #9ca3af;
 }
 
 button {
-	border-radius: 8px;
-	border: 1px solid transparent;
-	padding: 0.6em 1.2em;
-	font-size: 1em;
-	font-weight: 500;
-	font-family: inherit;
-	background-color: #ffffff;
-	color: #111827;
-	transition: border-color 0.25s;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #ffffff;
+  color: #111827;
+  transition: border-color 0.25s;
 }
 
 button {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 button:hover {
-	border-color: #396cd8;
+  border-color: #396cd8;
 }
 
 button:active {
-	border-color: #396cd8;
-	background-color: #f3f4f6;
+  border-color: #396cd8;
+  background-color: #f3f4f6;
 }
 
 input,
 button,
 textarea {
-	outline: none;
+  outline: none;
 }
 
 textarea {
-	font-family: inherit;
-	font-size: 16px;
-	line-height: 1.625;
-	background-color: #ffffff;
-	color: #111827;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.625;
+  background-color: #ffffff;
+  color: #111827;
 }
 
 #greet-input {
-	margin-right: 5px;
+  margin-right: 5px;
 }
 
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
-	body,
-	html {
-		background-color: #141414;
-		color: #f3f4f6;
-	}
+  body,
+  html {
+    background-color: #141414;
+    color: #f3f4f6;
+  }
 
-	.Pane {
-		background-color: #1a1a1a;
-	}
+  .Pane {
+    background-color: #1a1a1a;
+  }
 
-	.Resizer {
-		background-color: #374151;
-	}
+  .Resizer {
+    background-color: #374151;
+  }
 
-	.Resizer:hover {
-		background-color: #4b5563;
-	}
+  .Resizer:hover {
+    background-color: #4b5563;
+  }
 
-	button {
-		background-color: #1f2937;
-		color: #f3f4f6;
-	}
+  button {
+    background-color: #1f2937;
+    color: #f3f4f6;
+  }
 
-	button:hover {
-		border-color: #396cd8;
-	}
+  button:hover {
+    border-color: #396cd8;
+  }
 
-	button:active {
-		background-color: #374151;
-	}
+  button:active {
+    background-color: #374151;
+  }
 
-	input {
-		background-color: #1f2937;
-		color: #f3f4f6;
-	}
+  input {
+    background-color: #1f2937;
+    color: #f3f4f6;
+  }
 
-	textarea {
-		background-color: #1a1a1a;
-		color: #c7c7c7;
-	}
+  textarea {
+    background-color: #1a1a1a;
+    color: #c7c7c7;
+  }
 
-	a:hover {
-		color: #24c8db;
-	}
+  a:hover {
+    color: #24c8db;
+  }
 }

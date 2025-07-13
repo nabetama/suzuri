@@ -44,7 +44,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         )}
       </div>
       <textarea
-        className="flex-1 text-base p-4 border-0 border-r border-gray-200 dark:border-gray-700 outline-none w-full h-full resize-none bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-[#c7c7c7]"
+        className="flex-1 text-[16px] font-mono leading-relaxed p-6 border-0 border-r border-gray-200 dark:border-gray-700 outline-none w-full h-full resize-none bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-[#c7c7c7] break-words rounded"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="# title"
