@@ -23,8 +23,11 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
   const {
     currentDirPath,
     openDirs,
+    focusedPath,
+    hovered,
     nodeAction,
     inputValue,
+    setFocusedPath,
     setHovered,
     toggleDir,
     handleContextMenu,
@@ -34,6 +37,8 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
   } = ctx;
 
   const fullPath = getNodeFullPath(node, currentDirPath);
+  const isFocused = focusedPath === fullPath;
+  const isHovered = hovered === fullPath;
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -54,6 +59,11 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
     toggleDir(fullPath);
   };
 
+  const highlightClass =
+    isFocused || isHovered
+      ? "bg-gray-100 dark:bg-[#222222] text-gray-900 dark:text-white"
+      : "";
+
   if (node.isDir) {
     const isOpen = openDirs[fullPath] ?? false;
     const isRenaming =
@@ -73,8 +83,12 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
         ) : (
           <button
             type="button"
-            className="tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white rounded-sm"
-            onClick={handleDirToggle}
+            data-path={fullPath}
+            className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
+            onClick={() => {
+              setFocusedPath(fullPath);
+              handleDirToggle();
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") handleDirToggle();
             }}
@@ -140,8 +154,12 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
       ) : (
         <button
           type="button"
-          className="tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] select-none transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white rounded-sm"
-          onClick={() => onFileClick(fullPath)}
+          data-path={fullPath}
+          className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] select-none transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
+          onClick={() => {
+            setFocusedPath(fullPath);
+            onFileClick(fullPath);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") onFileClick(fullPath);
           }}

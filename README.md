@@ -1,9 +1,8 @@
 # Suzuri
 
+<img width="3024" height="1964" alt="image" src="https://github.com/user-attachments/assets/f5d6f1f7-a275-4bdb-9583-c22a58e4b324" />
+
 A lightweight Markdown editor with Live preview for macOS and Windows, built with Tauri.
-
-<img width="1512" height="982" alt="image" src="https://github.com/user-attachments/assets/23ac75f7-33ae-4d41-a89a-6e1b02ecec77" />
-
 
 ## Install
 
