@@ -2,8 +2,7 @@ import type React from "react";
 import SplitPane from "react-split-pane";
 import CommandOpenHint from "./components/CommandOpenHint";
 import DirectoryTree from "./components/DirectoryTree";
-import MarkdownEditor from "./components/MarkdownEditor";
-import MarkdownPreview from "./components/MarkdownPreview";
+import WysiwygEditor from "./components/WysiwygEditor";
 import { useDirectoryTree } from "./hooks/useDirectoryTree";
 import { useFileOperations } from "./hooks/useFileOperations";
 import { useMarkdownContent } from "./hooks/useMarkdownContent";
@@ -49,21 +48,13 @@ const Editor: React.FC = () => {
         onDelete={handleDelete}
         updateDirChildren={updateDirChildren}
       />
-      <SplitPane
-        split="vertical"
-        minSize={100}
-        defaultSize="50%"
-        className="h-screen"
-      >
-        <MarkdownEditor
-          value={markdown}
-          onChange={setMarkdown}
-          onSave={handleSave}
-          filePath={currentFilePath}
-          saveStatus={saveStatus}
-        />
-        <MarkdownPreview markdown={markdown} />
-      </SplitPane>
+      <WysiwygEditor
+        value={markdown}
+        onChange={setMarkdown}
+        onSave={handleSave}
+        filePath={currentFilePath}
+        saveStatus={saveStatus}
+      />
     </SplitPane>
   );
 };
