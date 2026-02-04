@@ -1,4 +1,5 @@
 import React from "react";
+import { getFileName } from "../utils/pathUtils";
 
 type MarkdownEditorProps = {
   value: string;
@@ -34,7 +35,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             className="text-gray-500 dark:text-gray-400 text-sm cursor-pointer"
             title={filePath}
           >
-            {filePath.split("/").pop()}
+            {getFileName(filePath)}
           </span>
         )}
         {saveStatus && (

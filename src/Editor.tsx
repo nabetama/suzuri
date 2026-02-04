@@ -4,27 +4,34 @@ import CommandOpenHint from "./components/CommandOpenHint";
 import DirectoryTree from "./components/DirectoryTree";
 import MarkdownEditor from "./components/MarkdownEditor";
 import MarkdownPreview from "./components/MarkdownPreview";
-import { useMarkdownTree } from "./hooks/useMarkdownTree";
+import { useDirectoryTree } from "./hooks/useDirectoryTree";
+import { useFileOperations } from "./hooks/useFileOperations";
+import { useMarkdownContent } from "./hooks/useMarkdownContent";
 
 const Editor: React.FC = () => {
+  const { dirPath, tree, handleOpenDirectory, updateDirChildren, refreshTree } =
+    useDirectoryTree();
   const {
     markdown,
     setMarkdown,
-    dirPath,
-    tree,
     currentFilePath,
     saveStatus,
-    handleOpenDirectory,
     handleFileClick,
     handleSave,
-    handleCreate,
-    handleRename,
-    handleDelete,
-    updateDirChildren,
-  } = useMarkdownTree();
+    resetContent,
+  } = useMarkdownContent(refreshTree);
+  const { handleCreate, handleRename, handleDelete } = useFileOperations(
+    dirPath,
+    refreshTree,
+  );
+
+  const onOpenDirectory = async () => {
+    await handleOpenDirectory();
+    resetContent();
+  };
 
   if (!dirPath) {
-    return <CommandOpenHint handleOpenDirectory={handleOpenDirectory} />;
+    return <CommandOpenHint handleOpenDirectory={onOpenDirectory} />;
   }
   return (
     <SplitPane
@@ -36,7 +43,7 @@ const Editor: React.FC = () => {
       <DirectoryTree
         rootNode={tree}
         onFileClick={handleFileClick}
-        onOpenDirectory={handleOpenDirectory}
+        onOpenDirectory={onOpenDirectory}
         onCreate={handleCreate}
         onRename={handleRename}
         onDelete={handleDelete}

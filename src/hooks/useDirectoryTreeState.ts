@@ -1,12 +1,11 @@
-import { confirm } from "@tauri-apps/plugin-dialog";
 import { useEffect, useState } from "react";
 import { DirMenuAction } from "../constants/menu";
 import type { NodeAction } from "../types/directoryTree";
+import { getFileName } from "../utils/pathUtils";
 
 export function useDirectoryTreeState(
   onCreate: (parentPath: string, name: string, isDir: boolean) => Promise<void>,
   onRename: (oldPath: string, newName: string, isDir: boolean) => Promise<void>,
-  onDelete: (path: string, isDir: boolean) => Promise<void>,
 ) {
   const [openDirs, setOpenDirs] = useState<Record<string, boolean>>({});
   const [hovered, setHovered] = useState<string | null>(null);
@@ -67,7 +66,7 @@ export function useDirectoryTreeState(
         isDir: contextMenu.type === "dir",
         path: contextMenu.path,
       });
-      setInputValue(contextMenu.path.split("/").pop() || "");
+      setInputValue(getFileName(contextMenu.path));
       setContextMenu(null);
     } else if (action === DirMenuAction.Delete) {
       setNodeAction({
@@ -101,17 +100,6 @@ export function useDirectoryTreeState(
     setInputValue("");
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!nodeAction) return;
-    const ok = await confirm(
-      `'${nodeAction.path.split("/").pop()} を削除しますか？`,
-    );
-    if (ok) {
-      await onDelete(nodeAction.path, nodeAction.isDir);
-    }
-    setNodeAction(null);
-  };
-
   return {
     openDirs,
     setOpenDirs,
@@ -130,6 +118,5 @@ export function useDirectoryTreeState(
     handleMenuClick,
     handleInputKeyDown,
     handleInputCancel,
-    handleDeleteConfirm,
   };
 }
