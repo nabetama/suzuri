@@ -7,7 +7,8 @@ import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { common, createLowlight } from "lowlight";
-import React, { useEffect, useRef } from "react";
+import type React from "react";
+import { useEffect, useRef } from "react";
 import { getFileName } from "../utils/pathUtils";
 
 const lowlight = createLowlight(common);
@@ -88,10 +89,7 @@ const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       const target = (e.target as HTMLElement).closest("a");
       if (!target) return;
       const href = target.getAttribute("href");
-      if (
-        href &&
-        (href.startsWith("http://") || href.startsWith("https://"))
-      ) {
+      if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
         e.preventDefault();
         try {
           await openUrl(href);
@@ -121,8 +119,10 @@ const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
           </span>
         )}
       </div>
-      <div className="flex-1 overflow-y-auto px-8 py-6 prose prose-sm prose-gray dark:prose-invert max-w-3xl mx-auto w-full text-[15px] leading-relaxed break-words">
-        <EditorContent editor={editor} />
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-8 py-6 prose prose-sm prose-gray dark:prose-invert max-w-3xl mx-auto w-full text-[15px] leading-relaxed break-words">
+          <EditorContent editor={editor} />
+        </div>
       </div>
     </div>
   );

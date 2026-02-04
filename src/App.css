@@ -110,20 +110,19 @@ body,
   background: transparent;
 }
 
-/* Tree pane: hide scrollbars by default, show vertical only on hover */
+.tree-pane::-webkit-scrollbar:horizontal {
+  height: 0;
+}
+
 .tree-pane::-webkit-scrollbar-thumb {
   background: transparent;
 }
 
-.tree-pane::-webkit-scrollbar-horizontal {
-  display: none;
-}
-
-.tree-pane:hover::-webkit-scrollbar-thumb {
+.tree-pane:hover::-webkit-scrollbar-thumb:vertical {
   background: var(--color-border);
 }
 
-.tree-pane:hover::-webkit-scrollbar-thumb:hover {
+.tree-pane:hover::-webkit-scrollbar-thumb:vertical:hover {
   background: var(--color-border-hover);
 }
 
