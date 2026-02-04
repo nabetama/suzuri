@@ -1,4 +1,4 @@
-name: Build Tauri App
+name: Build and Release Tauri App
 
 on:
   push:
@@ -6,11 +6,24 @@ on:
       - "v*.*.*"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - platform: macos-latest
+            args: "--target aarch64-apple-darwin"
+            rust_target: aarch64-apple-darwin
+          - platform: macos-latest
+            args: "--target x86_64-apple-darwin"
+            rust_target: x86_64-apple-darwin
+          - platform: windows-latest
+            args: ""
+            rust_target: ""
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -21,51 +34,32 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
         with:
-          version: 8
+          targets: ${{ matrix.rust_target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
 
       - name: Install frontend dependencies
         run: pnpm install
 
-      - name: Install Tauri CLI
-        run: pnpm dlx tauri@latest install-app-deps
-
       - name: Build Tauri app
-        run: pnpm tauri build
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: tauri-build-${{ matrix.platform }}
-          path: |
-            src-tauri/target/release/bundle/
-            src-tauri/target/release/bundle/**
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: tauri-build-macos-latest
-          path: dist/macos
-      - uses: actions/download-artifact@v4
-        with:
-          name: tauri-build-ubuntu-latest
-          path: dist/linux
-      - uses: actions/download-artifact@v4
-        with:
-          name: tauri-build-windows-latest
-          path: dist/windows
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            dist/**/*
+          args: ${{ matrix.args }}
+          tagName: ${{ github.ref_name }}
+          releaseName: "kakosama ${{ github.ref_name }}"
+          releaseBody: "See the assets to download this version and install."
+          releaseDraft: true
+          prerelease: false
