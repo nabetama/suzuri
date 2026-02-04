@@ -88,17 +88,66 @@ body,
   padding: 0;
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Tree pane: hide scrollbars by default, show vertical only on hover */
+.tree-pane::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.tree-pane::-webkit-scrollbar-horizontal {
+  display: none;
+}
+
+.tree-pane:hover::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+
+.tree-pane:hover::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-hover);
+}
+
 .Pane {
   overflow: hidden;
   background-color: var(--color-bg-pane);
 }
 
 .Resizer {
+  position: relative;
   background-color: var(--color-border);
   cursor: col-resize;
   width: 1px;
   z-index: 10;
   transition: background 0.2s;
+}
+
+.Resizer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  right: -4px;
 }
 
 .Resizer:hover {
@@ -136,6 +185,7 @@ a {
   height: 22px;
   margin: 0;
   padding: 0 8px;
+  white-space: nowrap;
 }
 
 .tree-arrow {

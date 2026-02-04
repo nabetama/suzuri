@@ -95,7 +95,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
       }}
     >
       <div
-        className="bg-white dark:bg-[#141414] text-gray-600 dark:text-[#7F7F7F] w-full min-w-0 p-0 overflow-y-auto h-full"
+        className="tree-pane bg-white dark:bg-[#141414] text-gray-600 dark:text-[#7F7F7F] w-full min-w-0 p-0 overflow-x-auto overflow-y-scroll h-full"
         onContextMenu={(e) => {
           if ((e.target as HTMLElement).closest(".tree-node-item")) return;
           e.preventDefault();
