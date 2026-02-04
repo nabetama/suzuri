@@ -41,6 +41,10 @@
 }
 
 :root {
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Meiryo",
+    sans-serif;
+  --font-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
   --color-bg-primary: #ffffff;
   --color-bg-secondary: #ffffff;
   --color-bg-pane: #ffffff;
@@ -61,7 +65,7 @@
     --color-bg-pane: #1a1a1a;
     --color-text-primary: #f3f4f6;
     --color-text-secondary: #c7c7c7;
-    --color-border: #374151;
+    --color-border: #2e2e2e;
     --color-border-hover: #4b5563;
     --color-accent: #396cd8;
     --color-link: #38bdf8;
@@ -72,7 +76,7 @@
 
 body,
 html {
-  font-family: "Fira Code", "Segoe UI", "Meiryo", sans-serif !important;
+  font-family: var(--font-ui) !important;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
 }
@@ -87,14 +91,14 @@ body,
 }
 
 .Pane {
-  overflow: auto;
+  overflow: hidden;
   background-color: var(--color-bg-pane);
 }
 
 .Resizer {
   background-color: var(--color-border);
   cursor: col-resize;
-  width: 2px;
+  width: 1px;
   z-index: 10;
   transition: background 0.2s;
 }
@@ -104,25 +108,8 @@ body,
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--color-btn-bg);
-  color: var(--color-text-primary);
-  transition: border-color 0.25s;
   cursor: pointer;
-}
-
-button:hover {
-  border-color: var(--color-accent);
-}
-
-button:active {
-  border-color: var(--color-accent);
-  background-color: var(--color-btn-active-bg);
+  font-family: inherit;
 }
 
 input,
@@ -132,11 +119,11 @@ textarea {
 }
 
 textarea {
-  font-family: inherit;
-  font-size: 16px;
-  line-height: 1.625;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.7;
   background-color: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }
 
 a {

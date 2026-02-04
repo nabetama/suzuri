@@ -52,11 +52,18 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ markdown }) => {
   }, []);
 
   return (
-    <div
-      ref={ref}
-      className="bg-gray-50 dark:bg-[#141414] text-gray-900 dark:text-[#c7c7c7] w-full h-full min-h-0 overflow-y-auto px-8 py-6 prose prose-gray dark:prose-invert max-w-3xl mx-auto text-[17px] leading-relaxed break-words rounded shadow"
-    >
-      {parse(html)}
+    <div className="flex flex-col h-full w-full">
+      <div className="px-4 h-9 min-h-[36px] border-b border-gray-200 dark:border-[#2e2e2e] flex items-center">
+        <span className="text-gray-400 dark:text-gray-500 text-xs">
+          Preview
+        </span>
+      </div>
+      <div
+        ref={ref}
+        className="flex-1 overflow-y-auto px-8 py-6 prose prose-sm prose-gray dark:prose-invert max-w-3xl mx-auto w-full text-[15px] leading-relaxed break-words"
+      >
+        {parse(html)}
+      </div>
     </div>
   );
 };
