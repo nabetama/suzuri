@@ -2,6 +2,8 @@ import { basename, join } from "@tauri-apps/api/path";
 import { BaseDirectory, readDir } from "@tauri-apps/plugin-fs";
 import type { TreeNode } from "../types/tree";
 
+const HIDDEN_DIRS = new Set(["node_modules", ".git"]);
+
 export async function getMarkdownTree(rootPath: string): Promise<TreeNode> {
   const entries = await readDir(rootPath, {
     baseDir: BaseDirectory.AppLocalData,
@@ -9,8 +11,10 @@ export async function getMarkdownTree(rootPath: string): Promise<TreeNode> {
   const children: TreeNode[] = [];
 
   for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
     const entryPath = await join(rootPath, entry.name);
     if (entry.isDirectory) {
+      if (HIDDEN_DIRS.has(entry.name)) continue;
       children.push({
         name: entry.name,
         path: entryPath,

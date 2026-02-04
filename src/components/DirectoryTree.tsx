@@ -229,7 +229,7 @@ const DirectoryTree = forwardRef<DirectoryTreeHandle, DirectoryTreeProps>(
         <div
           ref={containerRef}
           role="tree"
-          className="tree-pane bg-white dark:bg-[#141414] text-gray-600 dark:text-[#7F7F7F] w-full min-w-0 p-0 overflow-x-auto overflow-y-scroll h-full"
+          className="tree-pane w-full min-w-0 p-0 overflow-x-auto overflow-y-scroll h-full"
           tabIndex={0}
           onKeyDown={handleTreeKeyDown}
           onContextMenu={(e) => {
