@@ -169,6 +169,7 @@ button {
 
 a {
   color: var(--color-link);
+  cursor: pointer;
 }
 
 /* --- File tree --- */
