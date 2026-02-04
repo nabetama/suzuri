@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @layer base {
   @font-face {
@@ -128,4 +127,38 @@ textarea {
 
 a {
   color: var(--color-link);
+}
+
+/* --- File tree --- */
+.tree-node-item {
+  margin: 0;
+  padding: 0;
+}
+
+.tree-children {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  padding-inline-start: 14px;
+}
+
+.tree-btn {
+  height: 22px;
+  margin: 0;
+  padding: 0 8px;
+}
+
+.tree-arrow {
+  display: inline-block;
+  width: 12px;
+  text-align: center;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.tree-spacer {
+  display: inline-block;
+  width: 12px;
+  margin-right: 4px;
+  flex-shrink: 0;
 }

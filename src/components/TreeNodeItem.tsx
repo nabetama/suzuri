@@ -13,21 +13,6 @@ type TreeNodeItemProps = {
   updateDirChildren: (dirPath: string) => Promise<void>;
 };
 
-const ARROW_STYLE: React.CSSProperties = {
-  display: "inline-block",
-  width: "12px",
-  textAlign: "center",
-  marginRight: "4px",
-  flexShrink: 0,
-};
-
-const SPACER_STYLE: React.CSSProperties = {
-  display: "inline-block",
-  width: "12px",
-  marginRight: "4px",
-  flexShrink: 0,
-};
-
 const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
   node,
   onFileClick,
@@ -75,7 +60,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
       nodeAction?.type === "rename" && nodeAction.path === fullPath;
 
     return (
-      <li key={fullPath} className="tree-node-item select-none w-full m-0 p-0">
+      <li key={fullPath} className="tree-node-item select-none w-full">
         {isRenaming ? (
           <TreeNodeInput
             inputRef={inputRef}
@@ -88,8 +73,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
         ) : (
           <button
             type="button"
-            style={{ height: "22px" }}
-            className="tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] transition-colors duration-100 px-2 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white rounded-sm"
+            className="tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white rounded-sm"
             onClick={handleDirToggle}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") handleDirToggle();
@@ -101,23 +85,16 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
               handleContextMenu(e, "dir", fullPath);
             }}
           >
-            <span className="text-[10px] opacity-50" style={ARROW_STYLE}>
+            <span className="tree-arrow text-[10px] opacity-50">
               {isOpen ? "▼" : "▶"}
             </span>
             {node.name}
           </button>
         )}
         {isOpen && (
-          <ul
-            className="list-none"
-            style={{ margin: 0, padding: 0, paddingInlineStart: "14px" }}
-          >
+          <ul className="tree-children">
             {loading && (
-              <li
-                key="loading"
-                className="text-[13px] text-gray-400 dark:text-gray-600 px-2"
-                style={{ height: "22px", lineHeight: "22px" }}
-              >
+              <li className="tree-node-item text-[13px] text-gray-400 dark:text-gray-600 px-2 leading-[22px]">
                 Loading...
               </li>
             )}
@@ -150,7 +127,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
     );
   }
   return (
-    <li key={fullPath} className="tree-node-item w-full m-0 p-0">
+    <li key={fullPath} className="tree-node-item w-full">
       {nodeAction?.type === "rename" && nodeAction.path === fullPath ? (
         <TreeNodeInput
           inputRef={inputRef}
@@ -163,8 +140,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
       ) : (
         <button
           type="button"
-          style={{ height: "22px" }}
-          className="tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] select-none transition-colors duration-100 px-2 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white rounded-sm"
+          className="tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] select-none transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white rounded-sm"
           onClick={() => onFileClick(fullPath)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") onFileClick(fullPath);
@@ -176,7 +152,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
             handleContextMenu(e, "file", fullPath);
           }}
         >
-          <span style={SPACER_STYLE} />
+          <span className="tree-spacer" />
           {node.name}
         </button>
       )}
