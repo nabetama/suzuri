@@ -1,7 +1,6 @@
 import type { TreeNode } from "../types/tree";
 
 export const sortTreeNodes = (nodes: TreeNode[]) => {
-  // console.log("nodes", nodes);
   return [...nodes].sort((a, b) => {
     if (a.isDir && !b.isDir) return -1;
     if (!a.isDir && b.isDir) return 1;

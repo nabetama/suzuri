@@ -39,12 +39,42 @@
     font-display: swap;
   }
 }
-/* Light mode (default) */
+
+:root {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #ffffff;
+  --color-bg-pane: #ffffff;
+  --color-text-primary: #111827;
+  --color-text-secondary: #c7c7c7;
+  --color-border: #e5e7eb;
+  --color-border-hover: #9ca3af;
+  --color-accent: #396cd8;
+  --color-link: #0969da;
+  --color-btn-bg: #ffffff;
+  --color-btn-active-bg: #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-primary: #141414;
+    --color-bg-secondary: #1a1a1a;
+    --color-bg-pane: #1a1a1a;
+    --color-text-primary: #f3f4f6;
+    --color-text-secondary: #c7c7c7;
+    --color-border: #374151;
+    --color-border-hover: #4b5563;
+    --color-accent: #396cd8;
+    --color-link: #38bdf8;
+    --color-btn-bg: #1f2937;
+    --color-btn-active-bg: #374151;
+  }
+}
+
 body,
 html {
   font-family: "Fira Code", "Segoe UI", "Meiryo", sans-serif !important;
-  background-color: #ffffff;
-  color: #111827;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
 }
 
 html,
@@ -58,11 +88,11 @@ body,
 
 .Pane {
   overflow: auto;
-  background-color: #ffffff;
+  background-color: var(--color-bg-pane);
 }
 
 .Resizer {
-  background-color: #e5e7eb;
+  background-color: var(--color-border);
   cursor: col-resize;
   width: 2px;
   z-index: 10;
@@ -70,7 +100,7 @@ body,
 }
 
 .Resizer:hover {
-  background-color: #9ca3af;
+  background-color: var(--color-border-hover);
 }
 
 button {
@@ -80,22 +110,19 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #ffffff;
-  color: #111827;
+  background-color: var(--color-btn-bg);
+  color: var(--color-text-primary);
   transition: border-color 0.25s;
-}
-
-button {
   cursor: pointer;
 }
 
 button:hover {
-  border-color: #396cd8;
+  border-color: var(--color-accent);
 }
 
 button:active {
-  border-color: #396cd8;
-  background-color: #f3f4f6;
+  border-color: var(--color-accent);
+  background-color: var(--color-btn-active-bg);
 }
 
 input,
@@ -108,58 +135,10 @@ textarea {
   font-family: inherit;
   font-size: 16px;
   line-height: 1.625;
-  background-color: #ffffff;
-  color: #111827;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
 }
 
-#greet-input {
-  margin-right: 5px;
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  body,
-  html {
-    background-color: #141414;
-    color: #f3f4f6;
-  }
-
-  .Pane {
-    background-color: #1a1a1a;
-  }
-
-  .Resizer {
-    background-color: #374151;
-  }
-
-  .Resizer:hover {
-    background-color: #4b5563;
-  }
-
-  button {
-    background-color: #1f2937;
-    color: #f3f4f6;
-  }
-
-  button:hover {
-    border-color: #396cd8;
-  }
-
-  button:active {
-    background-color: #374151;
-  }
-
-  input {
-    background-color: #1f2937;
-    color: #f3f4f6;
-  }
-
-  textarea {
-    background-color: #1a1a1a;
-    color: #c7c7c7;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
+a {
+  color: var(--color-link);
 }

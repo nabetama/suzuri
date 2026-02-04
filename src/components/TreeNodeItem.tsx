@@ -1,10 +1,11 @@
 import type React from "react";
 import { useContext, useRef, useState } from "react";
 import { useAutoSelectInput } from "../hooks/useAutoSelectInput";
-import { useNodeFullPath } from "../hooks/useNodeFullPath";
 import type { TreeNode } from "../types/tree";
+import { getNodeFullPath } from "../utils/pathUtils";
 import { sortTreeNodes } from "../utils/sortTreeNodes";
 import { DirectoryTreeContext } from "./DirectoryTree";
+import TreeNodeInput from "./TreeNodeInput";
 
 type TreeNodeItemProps = {
   node: TreeNode;
@@ -32,7 +33,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
     setInputValue,
   } = ctx;
 
-  const fullPath = useNodeFullPath(node, currentDirPath);
+  const fullPath = getNodeFullPath(node, currentDirPath);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -43,59 +44,40 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
       (nodeAction?.type === "new" && nodeAction.path === fullPath),
   );
 
+  const handleDirToggle = async () => {
+    const isOpen = openDirs[fullPath] ?? false;
+    if (!isOpen && node.children === undefined) {
+      setLoading(true);
+      await updateDirChildren(fullPath);
+      setLoading(false);
+    }
+    toggleDir(fullPath);
+  };
+
   if (node.isDir) {
     const isOpen = openDirs[fullPath] ?? false;
     const isRenaming =
       nodeAction?.type === "rename" && nodeAction.path === fullPath;
 
-    const handleDirClick = async () => {
-      if (!isOpen && node.children === undefined) {
-        setLoading(true);
-        await updateDirChildren(fullPath);
-        setLoading(false);
-      }
-      toggleDir(fullPath);
-    };
-
-    const handleDirKeyDown = async (e: React.KeyboardEvent) => {
-      if (
-        (e.key === "Enter" || e.key === " ") &&
-        !isOpen &&
-        node.children === undefined
-      ) {
-        setLoading(true);
-        await updateDirChildren(fullPath);
-        setLoading(false);
-        toggleDir(fullPath);
-      } else if (e.key === "Enter" || e.key === " ") {
-        toggleDir(fullPath);
-      }
-    };
-
     return (
       <li key={fullPath} className="tree-node-item select-none w-full">
         {isRenaming ? (
-          <input
-            ref={inputRef}
+          <TreeNodeInput
+            inputRef={inputRef}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") {
-                handleInputCancel();
-              } else {
-                handleInputKeyDown(e);
-              }
-            }}
-            onBlur={handleInputCancel}
-            className="text-[13px] px-2 py-1 border border-blue-500 dark:border-[#0078d4] rounded bg-white dark:bg-[#23272e] text-gray-900 dark:text-[#d4d4d4] w-full outline-none focus:border-blue-600 dark:focus:border-[#3794ff] focus:ring-1 focus:ring-blue-600 dark:focus:ring-[#3794ff] placeholder:text-gray-400 dark:placeholder:text-[#888]"
+            onChange={setInputValue}
+            onKeyDown={handleInputKeyDown}
+            onCancel={handleInputCancel}
             placeholder="新しい名前"
           />
         ) : (
           <button
             type="button"
             className="tree-node-item cursor-pointer flex items-center gap-1 text-[13px] text-gray-700 dark:text-[#c7c7c7] transition-colors duration-100 px-1.5 py-0.5 w-full text-left bg-transparent border-none outline-none focus:ring-0 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-900 dark:hover:text-white"
-            onClick={handleDirClick}
-            onKeyDown={handleDirKeyDown}
+            onClick={handleDirToggle}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") handleDirToggle();
+            }}
             onMouseEnter={() => setHovered(fullPath)}
             onMouseLeave={() => setHovered(null)}
             onContextMenu={(e) => {
@@ -123,13 +105,12 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
               ))}
             {nodeAction?.type === "new" && nodeAction.path === fullPath && (
               <li key={`new-input-${fullPath}`} className="tree-node-item">
-                <input
-                  ref={inputRef}
+                <TreeNodeInput
+                  inputRef={inputRef}
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={setInputValue}
                   onKeyDown={handleInputKeyDown}
-                  onBlur={handleInputCancel}
-                  className="text-base px-2 py-0.5 border border-[#0078d4] rounded bg-[#1e1e1e] text-white w-[90%] outline-none pl-[16px]"
+                  onCancel={handleInputCancel}
                   placeholder={
                     nodeAction.isDir ? "新しいフォルダ名" : "新しいファイル名"
                   }
@@ -144,19 +125,12 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
   return (
     <li key={fullPath} className="tree-node-item w-full">
       {nodeAction?.type === "rename" && nodeAction.path === fullPath ? (
-        <input
-          ref={inputRef}
+        <TreeNodeInput
+          inputRef={inputRef}
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              handleInputCancel();
-            } else {
-              handleInputKeyDown(e);
-            }
-          }}
-          onBlur={handleInputCancel}
-          className="text-[13px] px-2 py-1 border border-[#0078d4] rounded bg-[#23272e] text-[#d4d4d4] w-full outline-none focus:border-[#3794ff] focus:ring-1 focus:ring-[#3794ff] placeholder:text-[#888]"
+          onChange={setInputValue}
+          onKeyDown={handleInputKeyDown}
+          onCancel={handleInputCancel}
           placeholder="新しい名前"
         />
       ) : (

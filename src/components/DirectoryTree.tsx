@@ -5,6 +5,7 @@ import { useCommandOpenDirectory } from "../hooks/useCommandOpenDirectory";
 import { useDirectoryTreeState } from "../hooks/useDirectoryTreeState";
 import type { NodeAction } from "../types/directoryTree";
 import type { TreeNode } from "../types/tree";
+import { getFileName } from "../utils/pathUtils";
 import TreeNodeItem from "./TreeNodeItem";
 
 export type DirectoryTreeContextType = {
@@ -48,7 +49,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   onDelete,
   updateDirChildren,
 }) => {
-  const treeState = useDirectoryTreeState(onCreate, onRename, onDelete);
+  const treeState = useDirectoryTreeState(onCreate, onRename);
 
   useCommandOpenDirectory(onOpenDirectory);
 
@@ -140,7 +141,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
                   onClick={async () => {
                     if (item.key === "delete") {
                       const ok = confirm(
-                        `'${contextMenu?.path.split("/").pop()}' を削除しますか？`,
+                        `'${getFileName(contextMenu?.path ?? "")}' を削除しますか？`,
                       );
 
                       if (ok) {
