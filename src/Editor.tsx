@@ -50,7 +50,7 @@ const Editor: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+      if (e.metaKey && e.key.toLowerCase() === "b") {
         e.preventDefault();
         toggleSidebar();
       }
