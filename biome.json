@@ -23,6 +23,20 @@
 			"recommended": true
 		}
 	},
+	"overrides": [
+		{
+			"include": [
+				"src/components/DirectoryTree.tsx"
+			],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"noNoninteractiveTabindex": "off"
+					}
+				}
+			}
+		}
+	],
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"

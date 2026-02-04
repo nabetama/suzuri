@@ -8,6 +8,7 @@ export function useDirectoryTreeState(
   onRename: (oldPath: string, newName: string, isDir: boolean) => Promise<void>,
 ) {
   const [openDirs, setOpenDirs] = useState<Record<string, boolean>>({});
+  const [focusedPath, setFocusedPath] = useState<string | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -103,6 +104,8 @@ export function useDirectoryTreeState(
   return {
     openDirs,
     setOpenDirs,
+    focusedPath,
+    setFocusedPath,
     hovered,
     setHovered,
     contextMenu,

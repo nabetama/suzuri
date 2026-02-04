@@ -126,6 +126,10 @@ body,
   background: var(--color-border-hover);
 }
 
+.tree-pane:focus {
+  outline: none;
+}
+
 .Pane {
   overflow: hidden;
   background-color: var(--color-bg-pane);

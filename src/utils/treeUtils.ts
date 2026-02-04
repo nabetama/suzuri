@@ -1,4 +1,5 @@
 import type { TreeNode } from "../types/tree";
+import { sortTreeNodes } from "./sortTreeNodes";
 
 export function findNodeByPath(node: TreeNode, path: string): TreeNode | null {
   if (node.path === path) return node;
@@ -32,4 +33,26 @@ export function mergeTree(
   });
 
   return { ...newNode, children: mergedChildren };
+}
+
+export type FlatNode = {
+  path: string;
+  isDir: boolean;
+  parentPath: string | null;
+};
+
+export function flattenVisibleNodes(
+  node: TreeNode,
+  openDirs: Record<string, boolean>,
+  parentPath: string | null = null,
+): FlatNode[] {
+  const result: FlatNode[] = [
+    { path: node.path, isDir: node.isDir, parentPath },
+  ];
+  if (node.isDir && openDirs[node.path] && node.children) {
+    for (const child of sortTreeNodes(node.children)) {
+      result.push(...flattenVisibleNodes(child, openDirs, node.path));
+    }
+  }
+  return result;
 }

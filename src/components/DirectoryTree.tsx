@@ -1,19 +1,22 @@
 import type React from "react";
-import { createContext, useEffect } from "react";
+import { createContext, useCallback, useEffect, useMemo, useRef } from "react";
 import { DIR_MENU_ITEMS, FILE_MENU_ITEMS } from "../constants/menu";
 import { useCommandOpenDirectory } from "../hooks/useCommandOpenDirectory";
 import { useDirectoryTreeState } from "../hooks/useDirectoryTreeState";
 import type { NodeAction } from "../types/directoryTree";
 import type { TreeNode } from "../types/tree";
 import { getFileName } from "../utils/pathUtils";
+import { flattenVisibleNodes } from "../utils/treeUtils";
 import TreeNodeItem from "./TreeNodeItem";
 
 export type DirectoryTreeContextType = {
   currentDirPath?: string | null;
   openDirs: Record<string, boolean>;
+  focusedPath: string | null;
   hovered: string | null;
   nodeAction: NodeAction | null;
   inputValue: string;
+  setFocusedPath: (path: string | null) => void;
   setHovered: (path: string | null) => void;
   toggleDir: (path: string) => void;
   handleContextMenu: (
@@ -55,6 +58,9 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
 
   const {
     openDirs,
+    setOpenDirs,
+    focusedPath,
+    setFocusedPath,
     hovered,
     setHovered,
     contextMenu,
@@ -71,6 +77,96 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
     handleInputCancel,
   } = treeState;
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const flatNodes = useMemo(() => {
+    if (!rootNode) return [];
+    return flattenVisibleNodes(rootNode, openDirs);
+  }, [rootNode, openDirs]);
+
+  const handleTreeKeyDown = useCallback(
+    async (e: React.KeyboardEvent) => {
+      if (nodeAction) return;
+      const key = e.key;
+      if (
+        !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter"].includes(
+          key,
+        )
+      )
+        return;
+      e.preventDefault();
+      setHovered(null);
+
+      const currentIdx = focusedPath
+        ? flatNodes.findIndex((n) => n.path === focusedPath)
+        : -1;
+
+      if (key === "ArrowDown") {
+        const next =
+          currentIdx < flatNodes.length - 1 ? currentIdx + 1 : currentIdx;
+        if (next >= 0) setFocusedPath(flatNodes[next].path);
+        return;
+      }
+
+      if (key === "ArrowUp") {
+        const prev = currentIdx > 0 ? currentIdx - 1 : 0;
+        setFocusedPath(flatNodes[prev].path);
+        return;
+      }
+
+      if (currentIdx < 0) return;
+      const current = flatNodes[currentIdx];
+
+      if (key === "ArrowRight") {
+        if (current.isDir) {
+          if (!openDirs[current.path]) {
+            await updateDirChildren(current.path);
+            setOpenDirs((prev) => ({ ...prev, [current.path]: true }));
+          }
+        }
+        return;
+      }
+
+      if (key === "ArrowLeft") {
+        if (current.isDir && openDirs[current.path]) {
+          setOpenDirs((prev) => ({ ...prev, [current.path]: false }));
+        } else if (
+          current.parentPath &&
+          current.parentPath !== rootNode?.path
+        ) {
+          setFocusedPath(current.parentPath);
+        }
+        return;
+      }
+
+      if (key === "Enter") {
+        if (current.isDir) {
+          if (!openDirs[current.path]) {
+            await updateDirChildren(current.path);
+          }
+          setOpenDirs((prev) => ({
+            ...prev,
+            [current.path]: !prev[current.path],
+          }));
+        } else {
+          onFileClick(current.path);
+        }
+      }
+    },
+    [
+      flatNodes,
+      focusedPath,
+      openDirs,
+      nodeAction,
+      rootNode?.path,
+      setFocusedPath,
+      setHovered,
+      setOpenDirs,
+      updateDirChildren,
+      onFileClick,
+    ],
+  );
+
   useEffect(() => {
     if (!contextMenu) return;
     const close = () => setContextMenu(null);
@@ -78,14 +174,27 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
     return () => window.removeEventListener("click", close);
   }, [contextMenu, setContextMenu]);
 
+  // Scroll focused node into view
+  useEffect(() => {
+    if (!focusedPath || !containerRef.current) return;
+    const btn = containerRef.current.querySelector(
+      `[data-path="${CSS.escape(focusedPath)}"]`,
+    );
+    if (btn) {
+      btn.scrollIntoView({ block: "nearest" });
+    }
+  }, [focusedPath]);
+
   return (
     <DirectoryTreeContext.Provider
       value={{
         currentDirPath: rootNode?.path,
         openDirs,
+        focusedPath,
         hovered,
         nodeAction,
         inputValue,
+        setFocusedPath,
         setHovered,
         toggleDir,
         handleContextMenu,
@@ -95,7 +204,11 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({
       }}
     >
       <div
+        ref={containerRef}
+        role="tree"
         className="tree-pane bg-white dark:bg-[#141414] text-gray-600 dark:text-[#7F7F7F] w-full min-w-0 p-0 overflow-x-auto overflow-y-scroll h-full"
+        tabIndex={0}
+        onKeyDown={handleTreeKeyDown}
         onContextMenu={(e) => {
           if ((e.target as HTMLElement).closest(".tree-node-item")) return;
           e.preventDefault();
