@@ -123,7 +123,7 @@ const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(
           )}
         </div>
         <div className="flex-1 overflow-y-auto">
-          <div className="px-8 py-6 prose prose-sm prose-gray dark:prose-invert max-w-3xl mx-auto w-full text-[15px] leading-relaxed break-words">
+          <div className="px-8 py-6 prose prose-gray dark:prose-invert max-w-3xl mx-auto w-full break-words">
             <EditorContent editor={editor} />
           </div>
         </div>
