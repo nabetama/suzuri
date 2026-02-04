@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "kakosama",
+  "productName": "suzuri",
   "version": "0.1.0",
   "identifier": "com.nabetama.app",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "kakosama",
+        "title": "Suzuri",
         "width": 800,
         "height": 600
       }
