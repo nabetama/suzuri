@@ -84,7 +84,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
           <button
             type="button"
             data-path={fullPath}
-            className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
+            className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-500 dark:text-[#8f8f8f] transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
             onClick={() => {
               setFocusedPath(fullPath);
               handleDirToggle();
@@ -155,7 +155,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
         <button
           type="button"
           data-path={fullPath}
-          className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-600 dark:text-[#b0b0b0] select-none transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
+          className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-500 dark:text-[#8f8f8f] select-none transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
           onClick={() => {
             setFocusedPath(fullPath);
             onFileClick(fullPath);
