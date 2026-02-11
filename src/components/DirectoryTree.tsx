@@ -203,24 +203,41 @@ const DirectoryTree = forwardRef<DirectoryTreeHandle, DirectoryTreeProps>(
       }
     }, [focusedPath]);
 
+    const contextValue = useMemo(
+      () => ({
+        currentDirPath: rootNode?.path,
+        openDirs,
+        focusedPath,
+        hovered,
+        nodeAction,
+        inputValue,
+        setFocusedPath,
+        setHovered,
+        toggleDir,
+        handleContextMenu,
+        handleInputKeyDown,
+        handleInputCancel,
+        setInputValue,
+      }),
+      [
+        rootNode?.path,
+        openDirs,
+        focusedPath,
+        hovered,
+        nodeAction,
+        inputValue,
+        setFocusedPath,
+        setHovered,
+        toggleDir,
+        handleContextMenu,
+        handleInputKeyDown,
+        handleInputCancel,
+        setInputValue,
+      ],
+    );
+
     return (
-      <DirectoryTreeContext.Provider
-        value={{
-          currentDirPath: rootNode?.path,
-          openDirs,
-          focusedPath,
-          hovered,
-          nodeAction,
-          inputValue,
-          setFocusedPath,
-          setHovered,
-          toggleDir,
-          handleContextMenu,
-          handleInputKeyDown,
-          handleInputCancel,
-          setInputValue,
-        }}
-      >
+      <DirectoryTreeContext.Provider value={contextValue}>
         <div
           ref={containerRef}
           role="tree"
