@@ -53,7 +53,6 @@ const IMAGE_MENU_HEIGHT_PX = 52;
 type WysiwygEditorProps = {
   value: string;
   onChange: (value: string) => void;
-  onSave: () => void;
   filePath?: string | null;
   saveStatus?: string;
 };
@@ -63,10 +62,7 @@ export type WysiwygEditorHandle = {
 };
 
 const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(
-  ({ value, onChange, onSave, filePath, saveStatus }, ref) => {
-    const onSaveRef = useRef(onSave);
-    onSaveRef.current = onSave;
-
+  ({ value, onChange, filePath, saveStatus }, ref) => {
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
 
@@ -103,17 +99,6 @@ const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(
     useImperativeHandle(ref, () => ({
       focus: () => editor?.commands.focus(),
     }));
-
-    useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
-          e.preventDefault();
-          onSaveRef.current();
-        }
-      };
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
-    }, []);
 
     useEffect(() => {
       if (!editor) return;
