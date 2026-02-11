@@ -7,6 +7,7 @@ import DirectoryTree from "./components/DirectoryTree";
 import type { WysiwygEditorHandle } from "./components/WysiwygEditor";
 import WysiwygEditor from "./components/WysiwygEditor";
 import { useDirectoryTree } from "./hooks/useDirectoryTree";
+import { useEditorFontSize } from "./hooks/useEditorFontSize";
 import { useFileOperations } from "./hooks/useFileOperations";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useMarkdownContent } from "./hooks/useMarkdownContent";
@@ -31,6 +32,8 @@ const Editor: React.FC = () => {
     refreshTree,
   );
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const { increaseFontSize, decreaseFontSize, resetFontSize } =
+    useEditorFontSize();
   const treeRef = useRef<DirectoryTreeHandle>(null);
   const editorRef = useRef<WysiwygEditorHandle>(null);
 
@@ -58,6 +61,9 @@ const Editor: React.FC = () => {
     { key: "b", metaKey: true, handler: toggleSidebar },
     { key: "s", metaKey: true, handler: handleSave },
     { key: "o", metaKey: true, handler: onOpenDirectory },
+    { key: "=", metaKey: true, handler: increaseFontSize },
+    { key: "-", metaKey: true, handler: decreaseFontSize },
+    { key: "0", metaKey: true, handler: resetFontSize },
   ]);
 
   const pane1Style = useMemo(
@@ -82,22 +88,22 @@ const Editor: React.FC = () => {
       resizerStyle={resizerStyle}
       className="h-screen"
     >
-      <DirectoryTree
-        ref={treeRef}
-        rootNode={tree}
-        onFileClick={handleFileClick}
-        onCreate={handleCreate}
-        onRename={handleRename}
-        onDelete={handleDelete}
-        updateDirChildren={updateDirChildren}
-      />
-      <WysiwygEditor
-        ref={editorRef}
-        value={markdown}
-        onChange={setMarkdown}
-        filePath={currentFilePath}
-        saveStatus={saveStatus}
-      />
+        <DirectoryTree
+          ref={treeRef}
+          rootNode={tree}
+          onFileClick={handleFileClick}
+          onCreate={handleCreate}
+          onRename={handleRename}
+          onDelete={handleDelete}
+          updateDirChildren={updateDirChildren}
+        />
+        <WysiwygEditor
+          ref={editorRef}
+          value={markdown}
+          onChange={setMarkdown}
+          filePath={currentFilePath}
+          saveStatus={saveStatus}
+        />
     </SplitPane>
   );
 };

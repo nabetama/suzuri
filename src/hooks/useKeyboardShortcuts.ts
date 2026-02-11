@@ -28,7 +28,15 @@ export function useKeyboardShortcuts(shortcuts: ShortcutConfig[]) {
       const key = e.key.toLowerCase();
 
       for (const shortcut of shortcutsRef.current) {
-        if (shortcut.key.toLowerCase() !== key) continue;
+        // キーの比較（+と=は同じキーとして扱う）
+        const shortcutKey = shortcut.key.toLowerCase();
+        const pressedKey = key;
+        const keyMatches =
+          shortcutKey === pressedKey ||
+          (shortcutKey === "=" && pressedKey === "+") ||
+          (shortcutKey === "+" && pressedKey === "=");
+
+        if (!keyMatches) continue;
 
         const needsMeta = shortcut.metaKey ?? false;
         const needsCtrl = shortcut.ctrlKey ?? false;

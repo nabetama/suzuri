@@ -135,7 +135,7 @@ body,
 .tree-pane {
   background-color: var(--color-bg-secondary);
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: calc(var(--editor-font-size, 16px) * 0.85);
   line-height: 1.6;
 }
 
@@ -185,34 +185,52 @@ a {
 .tree-node-item {
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .tree-children {
   list-style: none;
   margin: 0;
   padding: 0;
-  padding-inline-start: 14px;
+  padding-inline-start: 1em;
 }
 
 .tree-btn {
-  height: 22px;
+  height: 1.7em;
   margin: 0;
-  padding: 0 8px;
+  padding: 0 0.5em;
   white-space: nowrap;
 }
 
 .tree-arrow {
-  display: inline-block;
-  width: 12px;
-  text-align: center;
-  margin-right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.2em;
   flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.tree-arrow::before {
+  content: "";
+  display: block;
+  width: 0.4em;
+  height: 0.4em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg) translateX(-0.05em);
+}
+
+.tree-arrow[data-open="true"] {
+  transform: rotate(90deg);
 }
 
 .tree-spacer {
   display: inline-block;
-  width: 12px;
-  margin-right: 4px;
+  width: 0.9em;
+  margin-right: 0.25em;
   flex-shrink: 0;
 }
 
@@ -221,7 +239,7 @@ a {
   min-height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
     "Hiragino Sans", Meiryo, sans-serif, "Segoe UI Emoji";
-  font-size: 1.0625rem;
+  font-size: var(--editor-font-size, 16px);
   line-height: 1.85;
   color: var(--color-text-primary);
 }
@@ -240,7 +258,7 @@ a {
 }
 
 .tiptap h1 {
-  font-size: 1.9rem;
+  font-size: 1.8em;
   font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1.35;
@@ -249,7 +267,7 @@ a {
 }
 
 .tiptap h2 {
-  font-size: 1.5rem;
+  font-size: 1.4em;
   font-weight: 600;
   letter-spacing: 0.015em;
   line-height: 1.45;
@@ -258,7 +276,7 @@ a {
 }
 
 .tiptap h3 {
-  font-size: 1.25rem;
+  font-size: 1.2em;
   font-weight: 600;
   letter-spacing: 0.01em;
   line-height: 1.5;
@@ -267,7 +285,7 @@ a {
 }
 
 .tiptap h4 {
-  font-size: 1.1rem;
+  font-size: 1.1em;
   font-weight: 600;
   letter-spacing: 0.005em;
   line-height: 1.5;
