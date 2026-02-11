@@ -32,7 +32,7 @@ const Editor: React.FC = () => {
     refreshTree,
   );
   const [sidebarVisible, setSidebarVisible] = useState(true);
-  const { fontSize, increaseFontSize, decreaseFontSize, resetFontSize } =
+  const { increaseFontSize, decreaseFontSize, resetFontSize } =
     useEditorFontSize();
   const treeRef = useRef<DirectoryTreeHandle>(null);
   const editorRef = useRef<WysiwygEditorHandle>(null);
@@ -88,23 +88,22 @@ const Editor: React.FC = () => {
       resizerStyle={resizerStyle}
       className="h-screen"
     >
-      <DirectoryTree
-        ref={treeRef}
-        rootNode={tree}
-        onFileClick={handleFileClick}
-        onCreate={handleCreate}
-        onRename={handleRename}
-        onDelete={handleDelete}
-        updateDirChildren={updateDirChildren}
-      />
-      <WysiwygEditor
-        ref={editorRef}
-        value={markdown}
-        onChange={setMarkdown}
-        filePath={currentFilePath}
-        saveStatus={saveStatus}
-        fontSize={fontSize}
-      />
+        <DirectoryTree
+          ref={treeRef}
+          rootNode={tree}
+          onFileClick={handleFileClick}
+          onCreate={handleCreate}
+          onRename={handleRename}
+          onDelete={handleDelete}
+          updateDirChildren={updateDirChildren}
+        />
+        <WysiwygEditor
+          ref={editorRef}
+          value={markdown}
+          onChange={setMarkdown}
+          filePath={currentFilePath}
+          saveStatus={saveStatus}
+        />
     </SplitPane>
   );
 };

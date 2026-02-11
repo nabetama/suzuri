@@ -27,9 +27,6 @@ export function useKeyboardShortcuts(shortcuts: ShortcutConfig[]) {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
 
-      // デバッグ用: キーイベントをログ出力
-      console.log("KeyDown:", { key: e.key, code: e.code, metaKey: e.metaKey, ctrlKey: e.ctrlKey });
-
       for (const shortcut of shortcutsRef.current) {
         // キーの比較（+と=は同じキーとして扱う）
         const shortcutKey = shortcut.key.toLowerCase();

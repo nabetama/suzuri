@@ -22,7 +22,6 @@ type WysiwygEditorProps = {
   onChange: (value: string) => void;
   filePath?: string | null;
   saveStatus?: string;
-  fontSize?: number;
 };
 
 export type WysiwygEditorHandle = {
@@ -30,7 +29,7 @@ export type WysiwygEditorHandle = {
 };
 
 const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(
-  ({ value, onChange, filePath, saveStatus, fontSize = 16 }, ref) => {
+  ({ value, onChange, filePath, saveStatus }, ref) => {
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
 
@@ -133,7 +132,6 @@ const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(
           <div
             ref={editorSurfaceRef}
             className="editor-content relative px-6 py-8 prose prose-gray dark:prose-invert mx-auto w-full break-words"
-            style={{ "--editor-font-size": `${fontSize}px` } as React.CSSProperties}
           >
             {editor && imageMenuPosition.visible && (
               <div

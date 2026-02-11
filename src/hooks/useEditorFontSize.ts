@@ -20,17 +20,19 @@ export function useEditorFontSize() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, String(fontSize));
+    document.documentElement.style.setProperty(
+      "--editor-font-size",
+      `${fontSize}px`,
+    );
   }, [fontSize]);
 
   const increaseFontSize = useCallback(() => {
-    console.log("increaseFontSize called, current:", fontSize);
     setFontSize((prev) => Math.min(prev + FONT_SIZE_STEP, MAX_FONT_SIZE));
-  }, [fontSize]);
+  }, []);
 
   const decreaseFontSize = useCallback(() => {
-    console.log("decreaseFontSize called, current:", fontSize);
     setFontSize((prev) => Math.max(prev - FONT_SIZE_STEP, MIN_FONT_SIZE));
-  }, [fontSize]);
+  }, []);
 
   const resetFontSize = useCallback(() => {
     setFontSize(DEFAULT_FONT_SIZE);

@@ -116,7 +116,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = memo(
           <button
             type="button"
             data-path={fullPath}
-            className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-500 dark:text-[#8f8f8f] transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
+            className={`tree-btn tree-node-item cursor-pointer flex items-center text-gray-500 dark:text-[#8f8f8f] transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
             onClick={handleDirClick}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") handleDirToggle();
@@ -125,7 +125,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = memo(
             onMouseLeave={handleMouseLeave}
             onContextMenu={handleDirContextMenu}
           >
-            <span className="tree-arrow text-[10px] opacity-50">
+            <span className="tree-arrow opacity-50">
               {isOpen ? "▼" : "▶"}
             </span>
             {node.name}
@@ -134,7 +134,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = memo(
         {isOpen && (
           <ul className="tree-children">
             {loading && (
-              <li className="tree-node-item text-[13px] text-gray-400 dark:text-gray-600 px-2 leading-[22px]">
+              <li className="tree-node-item text-gray-400 dark:text-gray-600 px-2 leading-[22px]">
                 Loading...
               </li>
             )}
@@ -181,7 +181,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = memo(
         <button
           type="button"
           data-path={fullPath}
-          className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-500 dark:text-[#8f8f8f] select-none transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
+          className={`tree-btn tree-node-item cursor-pointer flex items-center text-gray-500 dark:text-[#8f8f8f] select-none transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
           onClick={handleFileClick}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") onFileClick(fullPath);
