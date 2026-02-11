@@ -1,5 +1,4 @@
-import type React from "react";
-import { useContext, useRef, useState } from "react";
+import React, { memo, useCallback, useContext, useRef, useState } from "react";
 import { useAutoSelectInput } from "../hooks/useAutoSelectInput";
 import type { TreeNode } from "../types/tree";
 import { getNodeFullPath } from "../utils/pathUtils";
@@ -13,51 +12,84 @@ type TreeNodeItemProps = {
   updateDirChildren: (dirPath: string) => Promise<void>;
 };
 
-const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
-  node,
-  onFileClick,
-  updateDirChildren,
-}) => {
-  const ctx = useContext(DirectoryTreeContext);
-  if (!ctx) throw new Error("DirectoryTreeContext not found");
-  const {
-    currentDirPath,
-    openDirs,
-    focusedPath,
-    hovered,
-    nodeAction,
-    inputValue,
-    setFocusedPath,
-    setHovered,
-    toggleDir,
-    handleContextMenu,
-    handleInputKeyDown,
-    handleInputCancel,
-    setInputValue,
-  } = ctx;
+const TreeNodeItem: React.FC<TreeNodeItemProps> = memo(
+  ({ node, onFileClick, updateDirChildren }) => {
+    const ctx = useContext(DirectoryTreeContext);
+    if (!ctx) throw new Error("DirectoryTreeContext not found");
+    const {
+      currentDirPath,
+      openDirs,
+      focusedPath,
+      hovered,
+      nodeAction,
+      inputValue,
+      setFocusedPath,
+      setHovered,
+      toggleDir,
+      handleContextMenu,
+      handleInputKeyDown,
+      handleInputCancel,
+      setInputValue,
+    } = ctx;
 
-  const fullPath = getNodeFullPath(node, currentDirPath);
-  const isFocused = focusedPath === fullPath;
-  const isHovered = hovered === fullPath;
+    const fullPath = getNodeFullPath(node, currentDirPath);
+    const isFocused = focusedPath === fullPath;
+    const isHovered = hovered === fullPath;
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [loading, setLoading] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [loading, setLoading] = useState(false);
 
-  useAutoSelectInput(
-    inputRef,
-    (nodeAction?.type === "rename" && nodeAction.path === fullPath) ||
-      (nodeAction?.type === "new" && nodeAction.path === fullPath),
-  );
+    useAutoSelectInput(
+      inputRef,
+      (nodeAction?.type === "rename" && nodeAction.path === fullPath) ||
+        (nodeAction?.type === "new" && nodeAction.path === fullPath),
+    );
 
-  const handleDirToggle = async () => {
-    const isOpen = openDirs[fullPath] ?? false;
-    if (!isOpen && node.children === undefined) {
-      setLoading(true);
-      await updateDirChildren(fullPath);
-      setLoading(false);
-    }
-    toggleDir(fullPath);
-  };
+    const handleDirToggle = useCallback(async () => {
+      const isOpen = openDirs[fullPath] ?? false;
+      if (!isOpen && node.children === undefined) {
+        setLoading(true);
+        await updateDirChildren(fullPath);
+        setLoading(false);
+      }
+      toggleDir(fullPath);
+    }, [openDirs, fullPath, node.children, updateDirChildren, toggleDir]);
+
+    const handleDirClick = useCallback(() => {
+      setFocusedPath(fullPath);
+      handleDirToggle();
+    }, [setFocusedPath, fullPath, handleDirToggle]);
+
+    const handleFileClick = useCallback(() => {
+      setFocusedPath(fullPath);
+      onFileClick(fullPath);
+    }, [setFocusedPath, fullPath, onFileClick]);
+
+    const handleMouseEnter = useCallback(
+      () => setHovered(fullPath),
+      [setHovered, fullPath],
+    );
+
+    const handleMouseLeave = useCallback(
+      () => setHovered(null),
+      [setHovered],
+    );
+
+    const handleDirContextMenu = useCallback(
+      (e: React.MouseEvent) => {
+        e.preventDefault();
+        handleContextMenu(e, "dir", fullPath);
+      },
+      [handleContextMenu, fullPath],
+    );
+
+    const handleFileContextMenu = useCallback(
+      (e: React.MouseEvent) => {
+        e.preventDefault();
+        handleContextMenu(e, "file", fullPath);
+      },
+      [handleContextMenu, fullPath],
+    );
 
   const highlightClass =
     isFocused || isHovered
@@ -85,19 +117,13 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
             type="button"
             data-path={fullPath}
             className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-500 dark:text-[#8f8f8f] transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
-            onClick={() => {
-              setFocusedPath(fullPath);
-              handleDirToggle();
-            }}
+            onClick={handleDirClick}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") handleDirToggle();
             }}
-            onMouseEnter={() => setHovered(fullPath)}
-            onMouseLeave={() => setHovered(null)}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              handleContextMenu(e, "dir", fullPath);
-            }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onContextMenu={handleDirContextMenu}
           >
             <span className="tree-arrow text-[10px] opacity-50">
               {isOpen ? "▼" : "▶"}
@@ -156,19 +182,13 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
           type="button"
           data-path={fullPath}
           className={`tree-btn tree-node-item cursor-pointer flex items-center text-[13px] text-gray-500 dark:text-[#8f8f8f] select-none transition-colors duration-100 w-full text-left bg-transparent border-none outline-none focus:ring-0 rounded-sm ${highlightClass}`}
-          onClick={() => {
-            setFocusedPath(fullPath);
-            onFileClick(fullPath);
-          }}
+          onClick={handleFileClick}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") onFileClick(fullPath);
           }}
-          onMouseEnter={() => setHovered(fullPath)}
-          onMouseLeave={() => setHovered(null)}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            handleContextMenu(e, "file", fullPath);
-          }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onContextMenu={handleFileContextMenu}
         >
           <span className="tree-spacer" />
           {node.name}
@@ -176,6 +196,9 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
       )}
     </li>
   );
-};
+  },
+);
+
+TreeNodeItem.displayName = "TreeNodeItem";
 
 export default TreeNodeItem;
