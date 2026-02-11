@@ -5,50 +5,17 @@ import Link from "@tiptap/extension-link";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import { Markdown } from "@tiptap/markdown";
-import { NodeSelection } from "@tiptap/pm/state";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { common, createLowlight } from "lowlight";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+  parseMarkdownImageInput,
+  useImageBubbleMenu,
+} from "../hooks/useImageBubbleMenu";
 import { getFileName } from "../utils/pathUtils";
 
 const lowlight = createLowlight(common);
-
-const parseMarkdownImageInput = (
-  input: string,
-  fallbackAlt: string,
-): { src: string; alt: string; title: string | null } | null => {
-  const trimmed = input.trim();
-  if (!trimmed) return null;
-
-  const markdownMatch = trimmed.match(/^!\[(.*?)]\((.*?)(?:\s+"(.*)")?\)$/);
-  if (markdownMatch) {
-    const [, altRaw, srcRaw, titleRaw] = markdownMatch;
-    const src = srcRaw.trim().replace(/^<|>$/g, "");
-    if (!src) return null;
-    return {
-      src,
-      alt: altRaw || fallbackAlt,
-      title: titleRaw ?? null,
-    };
-  }
-
-  if (/^(https?:\/\/|data:)/.test(trimmed)) {
-    return { src: trimmed, alt: fallbackAlt, title: null };
-  }
-
-  return null;
-};
-
-const IMAGE_MENU_OFFSET_PX = 12;
-const IMAGE_MENU_HEIGHT_PX = 52;
 
 type WysiwygEditorProps = {
   value: string;
@@ -132,79 +99,17 @@ const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(
       return () => el.removeEventListener("click", handler);
     }, [editor]);
 
-    const [imageMarkdown, setImageMarkdown] = useState("");
-    const [imageMenuPosition, setImageMenuPosition] = useState<{
-      visible: boolean;
-      top: number;
-      left: number;
-      placement: "top" | "bottom";
-    }>({ visible: false, top: 0, left: 0, placement: "top" });
-    const [selectedImagePos, setSelectedImagePos] = useState<number | null>(
-      null,
-    );
-    const [selectedImageAttrs, setSelectedImageAttrs] = useState<{
-      src: string;
-      alt: string;
-      title: string | null;
-    } | null>(null);
-    const [isEditingImage, setIsEditingImage] = useState(false);
-    const editorSurfaceRef = useRef<HTMLDivElement>(null);
-    const imageMenuRef = useRef<HTMLDivElement>(null);
-
-    const updateImageMenu = useCallback(() => {
-      if (!editor) return;
-      const selection = editor.state.selection;
-      if (!editor.isActive("image") || !(selection instanceof NodeSelection)) {
-        if (!isEditingImage) {
-          setImageMenuPosition((prev) =>
-            prev.visible ? { ...prev, visible: false } : prev,
-          );
-        }
-        return;
-      }
-
-      const node = selection.node;
-      const src = node.attrs.src ?? "";
-      const alt = node.attrs.alt ?? "";
-      const title = node.attrs.title ?? null;
-      setSelectedImagePos(selection.from);
-      setSelectedImageAttrs({ src, alt, title });
-      setImageMarkdown(`![${alt}](${src})`);
-
-      const surface = editorSurfaceRef.current;
-      if (!surface) return;
-      const surfaceRect = surface.getBoundingClientRect();
-      const domNode = editor.view.nodeDOM(selection.from) as HTMLElement | null;
-      const img =
-        domNode?.nodeName === "IMG" ? domNode : domNode?.querySelector("img");
-      if (!img) return;
-      const rect = img.getBoundingClientRect();
-      const left = rect.left - surfaceRect.left + rect.width / 2;
-      const canPlaceAbove =
-        rect.top - surfaceRect.top >
-        IMAGE_MENU_HEIGHT_PX + IMAGE_MENU_OFFSET_PX;
-      const placement = canPlaceAbove ? "top" : "bottom";
-      const top = canPlaceAbove
-        ? rect.top - surfaceRect.top - IMAGE_MENU_OFFSET_PX
-        : rect.bottom - surfaceRect.top + IMAGE_MENU_OFFSET_PX;
-      setImageMenuPosition({
-        visible: true,
-        top,
-        left,
-        placement,
-      });
-    }, [editor, isEditingImage]);
-
-    useEffect(() => {
-      if (!editor) return;
-      updateImageMenu();
-      editor.on("selectionUpdate", updateImageMenu);
-      editor.on("transaction", updateImageMenu);
-      return () => {
-        editor.off("selectionUpdate", updateImageMenu);
-        editor.off("transaction", updateImageMenu);
-      };
-    }, [editor, updateImageMenu]);
+    const {
+      imageMarkdown,
+      setImageMarkdown,
+      imageMenuPosition,
+      selectedImagePos,
+      selectedImageAttrs,
+      editorSurfaceRef,
+      imageMenuRef,
+      handleFocusCapture,
+      handleBlurCapture,
+    } = useImageBubbleMenu(editor);
 
     return (
       <div className="flex-1 min-w-0 flex flex-col h-full">
@@ -242,15 +147,8 @@ const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>(
                       : "translate(-50%, 0)",
                 }}
                 data-placement={imageMenuPosition.placement}
-                onFocusCapture={() => setIsEditingImage(true)}
-                onBlurCapture={() => {
-                  requestAnimationFrame(() => {
-                    if (imageMenuRef.current?.contains(document.activeElement))
-                      return;
-                    setIsEditingImage(false);
-                    updateImageMenu();
-                  });
-                }}
+                onFocusCapture={handleFocusCapture}
+                onBlurCapture={handleBlurCapture}
               >
                 <form
                   className="image-bubble-form"
