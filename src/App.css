@@ -185,6 +185,7 @@ a {
 .tree-node-item {
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .tree-children {
@@ -202,12 +203,28 @@ a {
 }
 
 .tree-arrow {
-  display: inline-block;
-  width: 0.9em;
-  text-align: center;
-  margin-right: 0.25em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.2em;
   flex-shrink: 0;
-  font-size: 0.65em;
+  transition: transform 0.15s ease;
+}
+
+.tree-arrow::before {
+  content: "";
+  display: block;
+  width: 0.4em;
+  height: 0.4em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg) translateX(-0.05em);
+}
+
+.tree-arrow[data-open="true"] {
+  transform: rotate(90deg);
 }
 
 .tree-spacer {

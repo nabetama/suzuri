@@ -125,9 +125,10 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = memo(
             onMouseLeave={handleMouseLeave}
             onContextMenu={handleDirContextMenu}
           >
-            <span className="tree-arrow opacity-50">
-              {isOpen ? "▼" : "▶"}
-            </span>
+            <span
+              className="tree-arrow opacity-60"
+              data-open={isOpen}
+            />
             {node.name}
           </button>
         )}
