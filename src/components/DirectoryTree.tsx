@@ -9,7 +9,6 @@ import {
   useRef,
 } from "react";
 import { DIR_MENU_ITEMS, FILE_MENU_ITEMS } from "../constants/menu";
-import { useCommandOpenDirectory } from "../hooks/useCommandOpenDirectory";
 import { useDirectoryTreeState } from "../hooks/useDirectoryTreeState";
 import type { NodeAction } from "../types/directoryTree";
 import type { TreeNode } from "../types/tree";
@@ -44,7 +43,6 @@ export const DirectoryTreeContext = createContext<
 type DirectoryTreeProps = {
   rootNode: TreeNode | null;
   onFileClick: (path: string) => void;
-  onOpenDirectory: () => void;
   onCreate: (parentPath: string, name: string, isDir: boolean) => Promise<void>;
   onRename: (oldPath: string, newName: string, isDir: boolean) => Promise<void>;
   onDelete: (path: string, isDir: boolean) => Promise<void>;
@@ -60,7 +58,6 @@ const DirectoryTree = forwardRef<DirectoryTreeHandle, DirectoryTreeProps>(
     {
       rootNode,
       onFileClick,
-      onOpenDirectory,
       onCreate,
       onRename,
       onDelete,
@@ -69,8 +66,6 @@ const DirectoryTree = forwardRef<DirectoryTreeHandle, DirectoryTreeProps>(
     ref,
   ) => {
     const treeState = useDirectoryTreeState(onCreate, onRename);
-
-    useCommandOpenDirectory(onOpenDirectory);
 
     const {
       openDirs,

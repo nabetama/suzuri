@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import SplitPane from "react-split-pane";
 import CommandOpenHint from "./components/CommandOpenHint";
 import type { DirectoryTreeHandle } from "./components/DirectoryTree";
@@ -8,6 +8,7 @@ import type { WysiwygEditorHandle } from "./components/WysiwygEditor";
 import WysiwygEditor from "./components/WysiwygEditor";
 import { useDirectoryTree } from "./hooks/useDirectoryTree";
 import { useFileOperations } from "./hooks/useFileOperations";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useMarkdownContent } from "./hooks/useMarkdownContent";
 
 const HIDDEN: React.CSSProperties = { display: "none" };
@@ -48,21 +49,16 @@ const Editor: React.FC = () => {
     });
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        toggleSidebar();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleSidebar]);
-
-  const onOpenDirectory = async () => {
+  const onOpenDirectory = useCallback(async () => {
     await handleOpenDirectory();
     resetContent();
-  };
+  }, [handleOpenDirectory, resetContent]);
+
+  useKeyboardShortcuts([
+    { key: "b", metaKey: true, handler: toggleSidebar },
+    { key: "s", metaKey: true, handler: handleSave },
+    { key: "o", metaKey: true, handler: onOpenDirectory },
+  ]);
 
   const pane1Style = useMemo(
     () => (sidebarVisible ? VISIBLE : HIDDEN),
@@ -74,7 +70,7 @@ const Editor: React.FC = () => {
   );
 
   if (!dirPath) {
-    return <CommandOpenHint handleOpenDirectory={onOpenDirectory} />;
+    return <CommandOpenHint />;
   }
 
   return (
@@ -90,7 +86,6 @@ const Editor: React.FC = () => {
         ref={treeRef}
         rootNode={tree}
         onFileClick={handleFileClick}
-        onOpenDirectory={onOpenDirectory}
         onCreate={handleCreate}
         onRename={handleRename}
         onDelete={handleDelete}
@@ -100,7 +95,6 @@ const Editor: React.FC = () => {
         ref={editorRef}
         value={markdown}
         onChange={setMarkdown}
-        onSave={handleSave}
         filePath={currentFilePath}
         saveStatus={saveStatus}
       />
